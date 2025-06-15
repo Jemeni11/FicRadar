@@ -25,12 +25,6 @@ export type ScrapeResponse =
   | { done: true; data: storyObject[] }
   | { error: { name: string; message: string; stack?: string; cause?: string } }
 
-export type fileFormatType = {
-  json: boolean
-  txt: boolean
-  csv: boolean
-  html: boolean
-  linksOnly: boolean
-}
+export type fileFormatType = "json" | "txt" | "csv" | "html" | "linksOnly"
 
-export type fileFormatTypeKey = keyof fileFormatType
+export type fileFormatObject = Record<fileFormatType, boolean>
