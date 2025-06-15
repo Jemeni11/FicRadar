@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ["./src/**/*.{tsx,html}"],
+  content: ["./src/**/*.{js,ts,jsx,tsx}", "./**/*.{ts,tsx}"],
   darkMode: "media",
-  prefix: "plasmo-"
+  plugins: [require("@tailwindcss/forms")]
 }
