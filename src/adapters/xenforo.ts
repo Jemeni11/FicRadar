@@ -40,14 +40,36 @@ async function getXenForoData(
     : link.href
 
   try {
-    let pageNo = 1
-    let totalPages = 1
+    const firstPageDoc = await getDocument(pageUrl)
 
-    do {
+    const nav = firstPageDoc.querySelector("nav.pageNavWrapper ul.pageNav-main")
+    const last = nav?.lastElementChild?.textContent
+    const totalPages = parseInt(last ?? "1", 10)
+
+    const sampleLink = nav?.querySelector(
+      "a[href*='page=']"
+    ) as HTMLAnchorElement | null
+    const sampleHref = sampleLink?.getAttribute("href") || ""
+
+    const urlTemplate = sampleHref
+      ? new URL(withDomain(baseURL, sampleHref))
+      : new URL(pageUrl)
+
+    const basePath = urlTemplate.origin + urlTemplate.pathname
+    const baseParams = urlTemplate.searchParams
+    const pageParamName = "page"
+
+    const urls: string[] = []
+
+    for (let i = 1; i <= totalPages; i++) {
+      const params = new URLSearchParams(baseParams)
+      params.set(pageParamName, String(i))
+      urls.push(`${basePath}?${params.toString()}`)
+    }
+
+    for (let pageNo = 1; pageNo <= urls.length; pageNo++) {
       try {
-        const url =
-          pageNo > 1 ? getPaginatedSearchUrl(pageUrl, pageNo) : pageUrl
-        const doc = await getDocument(url)
+        const doc = await getDocument(urls[pageNo - 1])
         const ol: HTMLOListElement | null = doc.querySelector("ol.block-body")
 
         if (!ol) {
@@ -83,16 +105,12 @@ async function getXenForoData(
           }
         })
 
-        const nav = doc.querySelector("nav.pageNavWrapper ul.pageNav-main")
-        const last = nav?.lastElementChild?.textContent
-        totalPages = parseInt(last ?? "1", 10)
-
         if (progressCallback) {
           progressCallback({ page: pageNo, totalPages, found: data.length })
         }
 
         if (pageNo < totalPages) {
-          await delay(2000)
+          await delay(4000)
         }
       } catch (error) {
         customError(
@@ -100,10 +118,8 @@ async function getXenForoData(
           `Failed to fetch data from page ${pageNo}`,
           error
         )
-      } finally {
-        pageNo++
       }
-    } while (pageNo <= totalPages)
+    }
 
     return data
   } catch (error) {
