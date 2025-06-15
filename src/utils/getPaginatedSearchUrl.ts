@@ -2,20 +2,25 @@ export default function getPaginatedSearchUrl(
   baseUrl: string,
   pageNumber: number
 ): string {
-  const url = new URL(baseUrl)
+  let original = new URL(baseUrl)
 
-  if (pageNumber > 1) {
-    url.searchParams.set("page", String(pageNumber))
-
-    // Ensure query `q=*` is set (it’s percent-encoded)
-    if (!url.searchParams.has("q")) {
-      url.searchParams.set("q", "%252A")
-    }
-  } else {
-    // Remove page param on page 1 to match the original URL format
-    url.searchParams.delete("page")
-    url.searchParams.delete("q") // original page 1 has no `q`
+  if (pageNumber === 1) {
+    original.searchParams.delete("page")
+    original.searchParams.delete("q")
+    return original.toString()
   }
 
-  return url.toString()
+  const fresh = new URL(original.origin + original.pathname)
+
+  fresh.searchParams.set("page", String(pageNumber))
+  fresh.searchParams.set("q", "%252A")
+
+  // Copy over other params from original
+  original.searchParams.forEach((value, key) => {
+    if (!["page", "q"].includes(key)) {
+      fresh.searchParams.set(key, value)
+    }
+  })
+
+  return fresh.toString()
 }
