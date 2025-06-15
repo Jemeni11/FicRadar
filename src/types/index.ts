@@ -21,24 +21,9 @@ export type ScrapeRequest = {
 }
 
 export type ScrapeResponse =
-  | {
-      progress: {
-        page: number
-        totalPages?: number
-        found: number
-      }
-    }
-  | {
-      done: true
-      data: storyObject[]
-    }
-  | {
-      error: {
-        name: string
-        message: string
-        stack?: string
-      }
-    }
+  | { progress: ProgressData }
+  | { done: true; data: storyObject[] }
+  | { error: { name: string; message: string; stack?: string; cause?: string } }
 
 export type fileFormatType = {
   json: boolean
