@@ -49,7 +49,9 @@
     "host_permissions": [
       "https://forum.questionablequesting.com/members/*.*",
       "https://forums.spacebattles.com/members/*.*",
-      "https://forums.sufficientvelocity.com/members/*.*"
+      "https://forum.spacebattles.com/members/*.*",
+      "https://forums.sufficientvelocity.com/members/*.*",
+      "https://forum.sufficientvelocity.com/members/*.*"
     ],
     "browser_specific_settings": {
       "gecko": {
