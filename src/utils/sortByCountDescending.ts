@@ -1,7 +1,7 @@
-import type { storyObject } from "@/types"
+import type { StoryResult } from "@/types"
 
 export default function sortByCountDescending(
-  data: storyObject[]
-): storyObject[] {
+  data: StoryResult[],
+): StoryResult[] {
   return data.sort((a, b) => b.count - a.count)
 }
