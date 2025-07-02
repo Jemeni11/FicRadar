@@ -3,15 +3,9 @@ export type SupportedSites =
   | "SpaceBattles"
   | "SufficientVelocity"
 
-export type storyObject = {
-  title: string
-  link: string
-  count: number
-}
-
 export type ProgressData = {
   page: number
-  totalPages?: number
+  totalPages: number
   found: number
 }
 
@@ -21,9 +15,32 @@ export type ScrapeRequest = {
 }
 
 export type ScrapeResponse =
-  | { progress: ProgressData }
-  | { done: true; data: storyObject[] }
+  | { pending: true; progress: ProgressData }
+  | { done: true; data: StoryResult[] }
   | { error: { name: string; message: string; stack?: string; cause?: string } }
+
+export type JSONFileType = {
+  storyLink: string
+  storyName: string
+  authorLink: string
+  authorName: string
+}
+
+export type InputMethod = "paste" | "file"
+
+export type AuthorStatus = {
+  name: string
+  url: string
+  status: "queued" | "pending" | "success" | "error"
+  downloadUrl?: string
+  stories?: StoryResult[]
+}
+
+export type StoryResult = {
+  title: string
+  link: string
+  count: number
+}
 
 export type fileFormatType = "json" | "txt" | "csv" | "html" | "linksOnly"
 
