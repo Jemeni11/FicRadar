@@ -6,7 +6,10 @@ export default function saveTXTFile(data: AuthorStatus[], fileName: string) {
     return
   }
 
-  let content = data.map((item) => item.url).join("\n")
+  let content = data
+    .map((item) => item.stories.map((story) => story.link))
+    .flat()
+    .join("\n")
   const blob = new Blob([content], { type: "text/plain;charset=utf-8;" })
   const url = URL.createObjectURL(blob)
 
