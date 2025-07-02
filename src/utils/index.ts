@@ -4,6 +4,7 @@ import delay from "./delay"
 import extractUsername from "./extractUsername"
 import getPaginatedSearchUrl from "./getPaginatedSearchUrl"
 import isValidURL from "./isValidURL"
+import saveTXTFile from "./saveTXTFile"
 import sortByCountDescending from "./sortByCountDescending"
 import withDomain from "./withDomain"
 
@@ -14,6 +15,7 @@ export {
   extractUsername,
   getPaginatedSearchUrl,
   isValidURL,
+  saveTXTFile,
   sortByCountDescending,
   withDomain,
 }
