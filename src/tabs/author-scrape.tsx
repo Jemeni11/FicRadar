@@ -5,7 +5,12 @@ import type {
   StoryResult,
   SupportedSites,
 } from "@/types"
-import { delay, extractUsername, saveTXTFile } from "@/utils"
+import {
+  delay,
+  extractUsername,
+  saveTXTFile,
+  sortByCountDescending,
+} from "@/utils"
 import { useEffect, useState } from "react"
 
 import { Storage } from "@plasmohq/storage"
@@ -97,10 +102,8 @@ export default function AuthorScrapeTab() {
 
         const data = await scrapeAuthor(id, author.url, setProgressData)
 
-        console.log("data =>", data)
-
         if (data) {
-          updateStatus(i, "success", data)
+          updateStatus(i, "success", sortByCountDescending(data))
           console.log(
             `Successfully scraped ${data.length} stories for ${author.name}`,
           )
@@ -110,7 +113,6 @@ export default function AuthorScrapeTab() {
         updateStatus(i, "error")
       }
     }
-    console.log("All authors scraped!")
   }
 
   const handleDownload = () => {
