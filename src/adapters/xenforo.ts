@@ -1,20 +1,31 @@
-import type { ProgressData, storyObject } from "@/types"
-import { customError, delay, getPaginatedSearchUrl, withDomain } from "@/utils"
+import type { ProgressData, StoryResult } from "@/types"
+import { customError, delay, withDomain } from "@/utils"
 import { parseHTML } from "linkedom"
+
+// Remove everything after the last slash if it starts with "post-"
+function removePostNumber(url: string): string {
+  const urlObj = new URL(url)
+  const pathParts = urlObj.pathname.split("/")
+  if (pathParts[pathParts.length - 1].startsWith("post-")) {
+    pathParts.pop()
+    urlObj.pathname = pathParts.join("/")
+  }
+  return urlObj.toString()
+}
 
 async function getXenForoData(
   adapterName: string,
   baseURL: string,
   userUrl: string,
-  progressCallback?: (progress: ProgressData) => void
-): Promise<storyObject[]> {
-  const data: storyObject[] = []
+  progressCallback?: (progress: ProgressData) => void,
+): Promise<StoryResult[]> {
+  const data: StoryResult[] = []
 
   const getDocument = async (url: string) => {
     const response = await fetch(url, {
       mode: "cors",
       credentials: "include",
-      headers: { "User-Agent": navigator.userAgent }
+      headers: { "User-Agent": navigator.userAgent },
     })
 
     if (response.status === 403 || response.status === 401) {
@@ -28,7 +39,7 @@ async function getXenForoData(
   const profileDoc = await getDocument(userUrl)
 
   const link = profileDoc.querySelector(
-    'a.menu-linkRow[href^="/search/member?user_id="]'
+    'a.menu-linkRow[href^="/search/member?user_id="]',
   ) as HTMLAnchorElement | null
 
   if (!link) {
@@ -47,7 +58,7 @@ async function getXenForoData(
     const totalPages = parseInt(last ?? "1", 10)
 
     const sampleLink = nav?.querySelector(
-      "a[href*='page=']"
+      "a[href*='page=']",
     ) as HTMLAnchorElement | null
     const sampleHref = sampleLink?.getAttribute("href") || ""
 
@@ -79,7 +90,7 @@ async function getXenForoData(
         const liArray = Array.from(ol.children) as HTMLLIElement[]
         liArray.forEach((li) => {
           const anchor = li.querySelector(
-            ".contentRow-main h3.contentRow-title > a"
+            ".contentRow-main h3.contentRow-title > a",
           ) as HTMLAnchorElement
 
           if (
@@ -90,7 +101,7 @@ async function getXenForoData(
             return
 
           const title = anchor.textContent?.trim()
-          const href = withDomain(baseURL, anchor.href)
+          const href = removePostNumber(withDomain(baseURL, anchor.href))
 
           const existing = data.find((d) => d.title === title)
 
@@ -100,7 +111,7 @@ async function getXenForoData(
             data.push({
               title: title,
               link: href,
-              count: 1
+              count: 1,
             })
           }
         })
@@ -110,13 +121,14 @@ async function getXenForoData(
         }
 
         if (pageNo < totalPages) {
+          console.log("Delaying for 4 seconds")
           await delay(4000)
         }
       } catch (error) {
         customError(
           adapterName,
           `Failed to fetch data from page ${pageNo}`,
-          error
+          error,
         )
       }
     }
