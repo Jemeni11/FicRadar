@@ -1,11 +1,11 @@
-import type { ProgressData, storyObject } from "@/types"
+import type { ProgressData, StoryResult } from "@/types"
 
 import getXenForoData from "./xenforo"
 
 async function getQuestionableQuestingData(
   userURL: string,
-  progressCallback?: (progress: ProgressData) => void
-): Promise<storyObject[]> {
+  progressCallback?: (progress: ProgressData) => void,
+): Promise<StoryResult[]> {
   const adapterName = "QuestionableQuestingAdapter"
   const baseURL = "https://forum.questionablequesting.com"
 
