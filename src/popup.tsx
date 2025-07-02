@@ -1,7 +1,7 @@
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import type { InputMethod, JSONFileType } from "@/types"
 import { isValidURL } from "@/utils"
-import { useState } from "react"
+import { useRef, useState } from "react"
 
 import { Storage } from "@plasmohq/storage"
 
@@ -24,6 +24,8 @@ export default function Popup() {
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null)
 
   const [inputMethod, setInputMethod] = useState<InputMethod>("paste")
+
+  const formRef = useRef<HTMLFormElement | null>(null)
 
   const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const url = e.target.value
@@ -63,15 +65,20 @@ export default function Popup() {
     setError(null)
     setSuccess(null)
 
-    const formData = new FormData(e.currentTarget)
-    const file = formData.get("file") as File | null
+    setIsUploading(true)
+
+    const form = formRef.current
+    if (!form) {
+      throw new Error("Form not available")
+    }
+
+    const fileInput = form.elements.namedItem("file") as HTMLInputElement | null
+    const file = fileInput?.files?.[0] ?? null
 
     if (!file || !["application/json", "text/plain"].includes(file.type)) {
       setError("Please select a valid file.")
       return
     }
-
-    setIsUploading(true)
 
     try {
       let stories: string | string[]
@@ -85,11 +92,7 @@ export default function Popup() {
         }
 
         const isValid = parsed.every(
-          (item): item is JSONFileType =>
-            typeof item.storyLink === "string" &&
-            typeof item.storyName === "string" &&
-            typeof item.authorLink === "string" &&
-            typeof item.authorName === "string",
+          (item): item is JSONFileType => typeof item.authorLink === "string",
         )
 
         if (!isValid) {
@@ -251,6 +254,7 @@ export default function Popup() {
           </form>
         ) : (
           <form
+            ref={formRef}
             onSubmit={handleFileFormatSubmit}
             className="flex flex-col gap-4">
             <p className="text-sm text-gray-300">
