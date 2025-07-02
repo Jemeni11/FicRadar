@@ -1,11 +1,11 @@
-import type { ProgressData, storyObject } from "@/types"
+import type { ProgressData, StoryResult } from "@/types"
 
 import getXenForoData from "./xenforo"
 
 async function getSpaceBattlesData(
   userURL: string,
-  progressCallback?: (progress: ProgressData) => void
-): Promise<storyObject[]> {
+  progressCallback?: (progress: ProgressData) => void,
+): Promise<StoryResult[]> {
   const adapterName = "SpaceBattlesAdapter"
   const baseURL = "https://forums.spacebattles.com"
 
