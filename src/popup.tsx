@@ -1,129 +1,305 @@
-import { Progress } from "@/components/ui/progress"
-import type {
-  ProgressData,
-  ScrapeRequest,
-  ScrapeResponse,
-  storyObject,
-  SupportedSites
-} from "@/types"
-import { extractUsername, sortByCountDescending } from "@/utils"
-import { useEffect, useState } from "react"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import type { InputMethod, JSONFileType } from "@/types"
+import { isValidURL } from "@/utils"
+import { useState } from "react"
 
-import { usePort } from "@plasmohq/messaging/hook"
 import { Storage } from "@plasmohq/storage"
 
-import "@/style.css"
+import "./style.css"
 
-export default function FicRadar() {
-  const [progress, setProgress] = useState<ProgressData>({
-    page: 0,
-    totalPages: 0,
-    found: 0
-  })
-  const [inputState, setInputState] = useState("")
-  const [stories, setStories] = useState<storyObject[]>([])
-  const storage = new Storage({ area: "local" })
+import { cn } from "./lib/utils"
 
-  const { data, send } = usePort<ScrapeRequest, ScrapeResponse>("scrape")
+const storage = new Storage({ area: "local" })
 
-  const map: Record<string, SupportedSites> = {
-    "forum.questionablequesting.com": "QuestionableQuesting",
-    "forums.spacebattles.com": "SpaceBattles",
-    "forums.sufficientvelocity.com": "SufficientVelocity"
-  }
+export default function Popup() {
+  const [isUploading, setIsUploading] = useState(false)
+  const [isScanning, setIsScanning] = useState(false)
 
-  useEffect(() => {
-    const handleData = async () => {
-      if (!data) return
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
 
-      if ("progress" in data) {
-        setProgress(data.progress)
-      } else if ("done" in data) {
-        const sorted = sortByCountDescending(data.data)
-        const userName = extractUsername(inputState)
-        setStories(sorted)
+  const [urlError, setUrlError] = useState<string | null>(null)
+  const [currentUrl, setCurrentUrl] = useState("")
 
-        await storage.set("ficradarData", {
-          author: userName,
-          stories: sorted
-        })
-        console.log(sorted)
-      } else if ("error" in data) {
-        console.error(data.error)
-      }
-    }
+  const [selectedFileName, setSelectedFileName] = useState<string | null>(null)
 
-    handleData()
-  }, [data])
+  const [inputMethod, setInputMethod] = useState<InputMethod>("paste")
 
-  useEffect(() => {
-    return () => {
-      storage.remove("ficradarData")
-    }
-  }, [])
+  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const url = e.target.value
+    setCurrentUrl(url)
 
-  function handleClick() {
-    const hostname = new URL(inputState).hostname
-    const id = map[hostname]
-
-    if (!id) {
-      console.error("Unsupported site")
+    if (url.trim() === "") {
+      setUrlError(null)
       return
     }
 
-    send({ id, url: inputState })
+    if (!isValidURL(url)) {
+      if (!url.startsWith("http")) {
+        setUrlError("URL must start with http:// or https://")
+      } else {
+        try {
+          const hostname = new URL(url).hostname
+          setUrlError(
+            `${hostname} is not supported. Only QuestionableQuesting, SpaceBattles, and SufficientVelocity are supported.`,
+          )
+        } catch {
+          setUrlError("Please enter a valid URL")
+        }
+      }
+    } else {
+      setUrlError(null)
+    }
+  }
+
+  const handleFileFormatSubmit = async (
+    e: React.FormEvent<HTMLFormElement>,
+  ) => {
+    e.preventDefault()
+
+    await storage.remove("batchAuthorStories")
+    await storage.remove("singleAuthorURL")
+
+    setError(null)
+    setSuccess(null)
+
+    const formData = new FormData(e.currentTarget)
+    const file = formData.get("file") as File | null
+
+    if (!file || !["application/json", "text/plain"].includes(file.type)) {
+      setError("Please select a valid file.")
+      return
+    }
+
+    setIsUploading(true)
+
+    try {
+      let stories: string | string[]
+      const text = await file.text()
+
+      if (file.type === "application/json") {
+        const parsed = JSON.parse(text)
+
+        if (!Array.isArray(parsed)) {
+          throw new Error("Uploaded JSON file does not contain a valid array.")
+        }
+
+        const isValid = parsed.every(
+          (item): item is JSONFileType =>
+            typeof item.storyLink === "string" &&
+            typeof item.storyName === "string" &&
+            typeof item.authorLink === "string" &&
+            typeof item.authorName === "string",
+        )
+
+        if (!isValid) {
+          throw new Error("Uploaded JSON has invalid structure.")
+        }
+
+        stories = parsed.map((parse) => parse.authorLink)
+      } else {
+        // Extract links from raw or TalesTrove-formatted TXT
+        const lines = text.split(/\r?\n/)
+        const links: string[] = []
+
+        for (const line of lines) {
+          const trimmed = line.trim()
+          if (!trimmed) continue
+
+          // Direct URL on its own line
+          if (/^https?:\/\/\S+$/.test(trimmed)) {
+            links.push(trimmed)
+          }
+
+          // TalesTrove format: `Author Link: https://...`
+          else if (trimmed.startsWith("Author Link:")) {
+            const link = trimmed.replace("Author Link:", "").trim()
+            if (/^https?:\/\/\S+$/.test(link)) {
+              links.push(link)
+            }
+          }
+        }
+
+        if (links.length === 0) {
+          throw new Error("No valid story links found in TXT file.")
+        }
+
+        stories = links
+      }
+
+      await storage.set("batchAuthorStories", stories)
+
+      setSuccess("File processed successfully! Opening scanner...")
+
+      chrome.tabs.create({
+        url: chrome.runtime.getURL("./tabs/author-scrape.html"),
+      })
+    } catch (err) {
+      console.error("File upload failed:", err)
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Invalid file format. Please upload a proper TalesTrove XenForo JSON or a TXT file.",
+      )
+    }
+
+    setIsUploading(false)
+  }
+
+  const handleInputFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+
+    await storage.remove("batchAuthorStories")
+    await storage.remove("singleAuthorURL")
+
+    setError(null)
+    setSuccess(null)
+    setIsScanning(true)
+
+    try {
+      if (!isValidURL(currentUrl)) {
+        setError("Please enter a valid and supported URL.")
+        return
+      }
+
+      await storage.set("singleAuthorURL", currentUrl)
+
+      setSuccess("Opening scanner...")
+      chrome.tabs.create({
+        url: chrome.runtime.getURL("./tabs/author-scrape.html"),
+      })
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Something went wrong. Try again.",
+      )
+    } finally {
+      setIsScanning(false)
+    }
   }
 
   return (
-    <div className="flex flex-col p-10 gap-6 min-h-32 w-96">
-      <h1 className="text-3xl font-bold">FicRadar</h1>
-      <div className="flex w-full gap-4 flex-col">
-        <input
-          type="url"
-          name="url"
-          id="url"
-          value={inputState}
-          onChange={(e) => setInputState(e.target.value)}
-          className="mt-0.5 w-full rounded border-gray-300 shadow-sm sm:text-sm"
-        />
-        <button
-          type="button"
-          onClick={handleClick}
-          className="w-full rounded py-2 bg-purple-600 text-white text-lg">
-          Let's go
-        </button>
-      </div>
-      {progress.totalPages > 0 && (
-        <>
-          <p>Pages visited:</p>
+    <div className="w-96 min-h-96">
+      <div className="w-full aspect-video bg-[linear-gradient(90deg,#141142,#4143c7)]"></div>
 
-          <progress
-            max={progress.totalPages}
-            value={progress.page}
-            className="w-full rounded-full h-8"
-            // style={{
-            //   // Fix overflow clipping in Safari
-            //   // https://gist.github.com/domske/b66047671c780a238b51c51ffde8d3a0
-            //   transform: "translateZ(0)"
-            // }}
-          />
-
-          <p>
-            {progress.page}/{progress.totalPages}
-          </p>
-          <p>Number of unique threads found: {progress.found} </p>
-        </>
-      )}
-      {stories && stories.length > 0 && stories.length >= progress.found && (
-        <button
-          onClick={() => {
-            chrome.tabs.create({
-              url: "./tabs/stories.html"
-            })
+      <div className="p-4 flex flex-col gap-8 bg-fr-3 h-full text-white">
+        <h1 className="text-6xl text-center font-bold">FicRadar</h1>
+        <ToggleGroup
+          type="single"
+          className="border-fr-1 rounded-3xl p-1.5 flex w-full border border-solid"
+          value={inputMethod}
+          onValueChange={(value) => {
+            if (value) {
+              setInputMethod(value as InputMethod)
+            }
           }}>
-          Open tab page
-        </button>
-      )}
+          <ToggleGroupItem
+            value="paste"
+            className={cn(
+              inputMethod === "paste" && "rounded-3xl bg-fr-1",
+              "w-full text-center transition-colors",
+            )}>
+            Paste a Link
+          </ToggleGroupItem>
+          <ToggleGroupItem
+            value="file"
+            className={cn(
+              inputMethod === "file" && "rounded-3xl bg-fr-1",
+              "w-full text-center transition-colors",
+            )}>
+            Upload a File
+          </ToggleGroupItem>
+        </ToggleGroup>
+
+        {error && (
+          <div className="bg-red-900/50 border border-red-500 rounded-lg p-3 text-red-200">
+            {error}
+          </div>
+        )}
+
+        {success && (
+          <div className="bg-green-900/50 border border-green-500 rounded-lg p-3 text-green-200">
+            {success}
+          </div>
+        )}
+
+        {inputMethod === "paste" ? (
+          <form
+            onSubmit={handleInputFormSubmit}
+            className="flex flex-col gap-4">
+            <label htmlFor="url">
+              <input
+                type="url"
+                id="url"
+                value={currentUrl}
+                onChange={handleUrlChange}
+                placeholder="Enter author's profile URL"
+                className={cn(
+                  "mt-0.5 w-full rounded-3xl shadow-sm sm:text-sm bg-gray-900 text-white",
+                  urlError ? "border-red-500" : "border-fr-1",
+                )}
+              />
+            </label>
+            {urlError && (
+              <p className="text-red-400 text-sm mt-1">{urlError}</p>
+            )}
+            <button
+              type="submit"
+              disabled={isScanning || !currentUrl.trim() || !!urlError}
+              className="w-full rounded-3xl text-lg bg-fr-1 text-center py-1.5 disabled:opacity-50">
+              {isScanning ? "Scanning..." : "Scan Link"}
+            </button>
+          </form>
+        ) : (
+          <form
+            onSubmit={handleFileFormatSubmit}
+            className="flex flex-col gap-4">
+            <p className="text-sm text-gray-300">
+              Upload a{" "}
+              <a
+                href="https://github.com/Jemeni11/TalesTrove"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-fr-1 hover:underline">
+                TalesTrove
+              </a>{" "}
+              JSON/TXT file. Only XenForo Sites are supported.
+            </p>
+
+            <input
+              id="file"
+              name="file"
+              type="file"
+              accept="application/json,text/plain"
+              disabled={isUploading}
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (file) {
+                  setSelectedFileName(file.name)
+                }
+              }}
+            />
+
+            <label
+              htmlFor="file"
+              className={cn(
+                "w-full rounded-3xl text-lg text-center py-1.5 border-2 cursor-pointer transition-colors",
+                isUploading
+                  ? "border-gray-500 text-gray-500 cursor-not-allowed"
+                  : "border-fr-1 text-fr-1 hover:bg-fr-1 hover:text-white",
+              )}>
+              {selectedFileName || "Choose File"}
+            </label>
+
+            <button
+              type="submit"
+              disabled={isUploading || !selectedFileName?.trim()}
+              className="w-full rounded-3xl text-lg bg-fr-1 text-center py-1.5 disabled:opacity-50">
+              {isUploading ? "Processing..." : "Upload & Scan"}
+            </button>
+          </form>
+        )}
+      </div>
     </div>
   )
 }
