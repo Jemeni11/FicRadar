@@ -17,15 +17,12 @@
     "package:firefox": "plasmo package --target=firefox-mv2"
   },
   "dependencies": {
-    "@plasmohq/messaging": "^0.7.1",
     "@plasmohq/storage": "^1.15.0",
     "@radix-ui/react-toggle": "^1.1.9",
     "@radix-ui/react-toggle-group": "^1.1.10",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "jotai": "^2.12.5",
     "linkedom": "^0.18.11",
-    "lucide-react": "^0.515.0",
     "plasmo": "0.90.5",
     "react": "18.2.0",
     "react-dom": "18.2.0",
