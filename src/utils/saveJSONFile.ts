@@ -1,0 +1,20 @@
+import type { AuthorStatus } from "@/types"
+
+export default function saveJSONFile(data: AuthorStatus, fileName: string) {
+  if (data.stories.length === 0) {
+    console.error("No data to save.")
+    return
+  }
+
+  const content = JSON.stringify(data.stories, null, 2)
+
+  const blob = new Blob([content], { type: "text/plain;charset=utf-8;" })
+  const url = URL.createObjectURL(blob)
+
+  const link = document.createElement("a")
+  link.href = url
+  link.download = fileName
+  link.click()
+
+  URL.revokeObjectURL(url)
+}
