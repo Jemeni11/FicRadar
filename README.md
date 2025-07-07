@@ -19,6 +19,7 @@
 ## Table of Contents
 
 - [Table of Contents](#table-of-contents)
+- [Todo](#todo)
 - [Introduction](#introduction)
 - [Supported Sites](#supported-sites)
 - [Planned Support](#planned-support)
@@ -27,9 +28,10 @@
   - [Browser Extension Stores](#browser-extension-stores)
   - [Using Pre-built Files](#using-pre-built-files)
   - [Building From Source](#building-from-source)
-    - [Development Build:](#development-build)
-    - [Production Build:](#production-build)
+    - [Development Build](#development-build)
+    - [Production Build](#production-build)
 - [Usage](#usage)
+  - [Supported Files](#supported-files)
   - [Example Workflows](#example-workflows)
     - [With fichub-cli](#with-fichub-cli)
     - [With FanFicFare](#with-fanficfare)
@@ -39,6 +41,16 @@
 - [Who are you?](#who-are-you)
 - [License](#license)
 - [Changelog](#changelog)
+
+## Todo
+
+- Message to show if profile is hidden
+- If profile has no content
+- If profile has a `view older` button
+- when all scraping is done, overall download button
+- current download buttons are ugly
+- add logo to popup
+- add dialog explaining the format to popup
 
 ## Introduction
 
@@ -70,7 +82,7 @@ This project is built with the [Plasmo](https://docs.plasmo.com/) framework.
 - Export links in multiple formats:
   - JSON
   - CSV
-  - TXT (plain or links-only)
+  - TXT (links-only)
   - HTML
   - Browser-importable bookmarks
 - Clean and responsive UI
@@ -88,8 +100,8 @@ This project is built with the [Plasmo](https://docs.plasmo.com/) framework.
 1. Enable Developer Mode in Chrome or Firefox.
 2. Visit the [Releases Page](https://github.com/Jemeni11/FicRadar/releases) and download:
 
-- `chrome-mv3-prod.zip` for Chromium browsers
-- `firefox-mv2-prod.zip` for Firefox
+   - `chrome-mv3-prod.zip` for Chromium browsers
+   - `firefox-mv2-prod.zip` for Firefox
 
 3. Load it manually via your browser's developer tools.
 
@@ -105,13 +117,13 @@ cd FicRadar
 pnpm install
 ```
 
-#### Development Build:
+#### Development Build
 
 ```bash
 pnpm dev
 ```
 
-#### Production Build:
+#### Production Build
 
 ```bash
 pnpm build        # Chrome
@@ -124,12 +136,19 @@ Then load the resulting build folder as an unpacked extension.
 
 ## Usage
 
-> You must be logged in to the forum (or AO3) for data to be extracted.
+> You must be logged in to the forum for data to be extracted.
 
-1. Navigate to a supported user profile page or forum thread.
+1. Navigate to a supported user profile page and copy the url.
 2. Click the FicRadar icon.
-3. The extension will scan for fanfiction links.
-4. Export the results in your preferred format.
+3. Paste the URL or, upload a supported file. See the [supported files](#supported-files) section for more info.
+4. The extension will open a new tab and scan for fanfiction links.
+5. Export the results in your preferred format.
+
+### Supported Files
+
+- [TalesTrove](https://www.github.com/Jemeni11/TalesTrove) TXT (Both Linksonly and regular) and JSON
+- TXT file with line breaks separating each link, or with lines like: `Author Link: https://...`
+- JSON files with a `authorLink` field.
 
 ### Example Workflows
 
@@ -138,13 +157,13 @@ Downloading the stories gotten:
 #### With [fichub-cli](https://github.com/FicHub/fichub-cli)
 
 ```bash
-fichub_cli -i linksOnly.txt
+fichub_cli -i stoleThunderNotLightning_stories.txt
 ```
 
 #### With [FanFicFare](https://github.com/JimmXinu/FanFicFare)
 
 ```bash
-fanficfare -i linksOnly.txt
+fanficfare -i stoleThunderNotLightning_stories.txt
 ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -152,13 +171,13 @@ fanficfare -i linksOnly.txt
 ## FAQ
 
 **Do you store my data?**  
-Nope. Not even in local storage. FicRadar doesn’t track, save, or upload anything.
+Yes. Only on your own device. The extension makes use of the storage API (Add link) to send your data from the popup to the new tab. Your data isn't sent anywhere else. You can open the network tab on the new tab page to confirm. FicRadar doesn’t track, save, or upload anything.
 
 **Why do I need to be logged in?**  
-Because some platforms (like QQ on some pages and AO3) require login to access subscription data.
+Because some platforms (like QQ on some pages and AO3) require login to access subscription data. You could try without it. It could work. This hasn't been tested.
 
-**Why no manual input?**  
-FicRadar is about surfacing **public** interactions—what people publicly comment on. We don’t let you paste your own links, to keep the scope tight.
+**Isn't this shady?**  
+I don't think so. All this data is already publicly available. This extension just automates a process anyone could carry out manually. If you don't want your interactions on XenForo forums to be publicly visible, you can just hide your profile. This extension can’t get around that.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
