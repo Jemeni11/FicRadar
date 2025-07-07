@@ -8,6 +8,10 @@ import type {
 import {
   delay,
   extractUsername,
+  saveBookmarkHTMLFile,
+  saveCSVFile,
+  saveHTMLFile,
+  saveJSONFile,
   saveTXTFile,
   sortByCountDescending,
 } from "@/utils"
@@ -81,6 +85,8 @@ export default function AuthorScrapeTab() {
 
   const scrapeAllAuthors = async (authorList: AuthorStatus[]) => {
     for (let i = 0; i < authorList.length; i++) {
+      console.log(authorList)
+      console.log(authorList[i])
       const author = authorList[i]
       setSelectedAuthorIndex(i)
 
@@ -115,10 +121,36 @@ export default function AuthorScrapeTab() {
     }
   }
 
-  const handleDownload = () => {
+  const handleDownloadTXT = () => {
     if (selectedAuthor?.stories) {
-      const authorData = [selectedAuthor]
-      saveTXTFile(authorData, `${selectedAuthor.name}_stories.txt`)
+      saveTXTFile(selectedAuthor, `${selectedAuthor.name}_stories.txt`)
+    }
+  }
+
+  const handleDownloadJSON = () => {
+    if (selectedAuthor?.stories) {
+      saveJSONFile(selectedAuthor, `${selectedAuthor.name}_stories.json`)
+    }
+  }
+
+  const handleDownloadCSV = () => {
+    if (selectedAuthor?.stories) {
+      saveCSVFile(selectedAuthor, `${selectedAuthor.name}_stories.csv`)
+    }
+  }
+
+  const handleDownloadHTML = () => {
+    if (selectedAuthor?.stories) {
+      saveHTMLFile(selectedAuthor, `${selectedAuthor.name}_stories.html`)
+    }
+  }
+
+  const handleDownloadBookmarkHTML = () => {
+    if (selectedAuthor?.stories) {
+      saveBookmarkHTMLFile(
+        selectedAuthor,
+        `${selectedAuthor.name}_stories.html`,
+      )
     }
   }
 
@@ -137,6 +169,8 @@ export default function AuthorScrapeTab() {
         links = [singleURL]
       }
 
+      console.log(links)
+
       const deduped = Array.from(new Set(links)).filter((url) => {
         try {
           const hostname = new URL(url).hostname
@@ -145,6 +179,8 @@ export default function AuthorScrapeTab() {
           return false
         }
       })
+
+      console.log(deduped)
 
       if (deduped.length === 0) {
         console.warn("No valid URLs found to scrape")
@@ -157,6 +193,8 @@ export default function AuthorScrapeTab() {
         status: "queued",
         stories: [],
       }))
+
+      console.log(authorStates)
 
       setAuthors(authorStates)
 
@@ -221,12 +259,36 @@ export default function AuthorScrapeTab() {
             </a>
           </h1>
           {selectedAuthor?.status === "success" && (
-            <div className="flex">
+            <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={handleDownload}
+                onClick={handleDownloadTXT}
                 className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
                 Download TXT
+              </button>
+              <button
+                type="button"
+                onClick={handleDownloadJSON}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                Download JSON
+              </button>
+              <button
+                type="button"
+                onClick={handleDownloadCSV}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                Download CSV
+              </button>
+              <button
+                type="button"
+                onClick={handleDownloadHTML}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                Download HTML
+              </button>
+              <button
+                type="button"
+                onClick={handleDownloadBookmarkHTML}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                Download Bookmark HTML
               </button>
             </div>
           )}
