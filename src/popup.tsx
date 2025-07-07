@@ -1,5 +1,5 @@
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
-import type { InputMethod, JSONFileType } from "@/types"
+import type { InputMethod, TalesTroveJSONType } from "@/types"
 import { isValidURL } from "@/utils"
 import { useRef, useState } from "react"
 
@@ -92,7 +92,8 @@ export default function Popup() {
         }
 
         const isValid = parsed.every(
-          (item): item is JSONFileType => typeof item.authorLink === "string",
+          (item): item is TalesTroveJSONType =>
+            typeof item.authorLink === "string",
         )
 
         if (!isValid) {
