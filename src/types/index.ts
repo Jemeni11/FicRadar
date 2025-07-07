@@ -9,17 +9,7 @@ export type ProgressData = {
   found: number
 }
 
-export type ScrapeRequest = {
-  id: SupportedSites
-  url: string
-}
-
-export type ScrapeResponse =
-  | { pending: true; progress: ProgressData }
-  | { done: true; data: StoryResult[] }
-  | { error: { name: string; message: string; stack?: string; cause?: string } }
-
-export type JSONFileType = {
+export type TalesTroveJSONType = {
   storyLink: string
   storyName: string
   authorLink: string
@@ -32,8 +22,7 @@ export type AuthorStatus = {
   name: string
   url: string
   status: "queued" | "pending" | "success" | "error"
-  downloadUrl?: string
-  stories?: StoryResult[]
+  stories: StoryResult[]
 }
 
 export type StoryResult = {
@@ -42,6 +31,4 @@ export type StoryResult = {
   count: number
 }
 
-export type fileFormatType = "json" | "txt" | "csv" | "html" | "linksOnly"
-
-export type fileFormatObject = Record<fileFormatType, boolean>
+export type FileFormat = "json" | "txt" | "csv" | "html" | "bookmarksHtml"
