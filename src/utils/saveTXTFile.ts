@@ -1,15 +1,13 @@
 import type { AuthorStatus } from "@/types"
 
-export default function saveTXTFile(data: AuthorStatus[], fileName: string) {
-  if (data.length === 0) {
+export default function saveTXTFile(data: AuthorStatus, fileName: string) {
+  if (data.stories.length === 0) {
     console.error("No data to save.")
     return
   }
 
-  let content = data
-    .map((item) => item.stories.map((story) => story.link))
-    .flat()
-    .join("\n")
+  const content = data.stories.map((story) => story.link).join("\n")
+
   const blob = new Blob([content], { type: "text/plain;charset=utf-8;" })
   const url = URL.createObjectURL(blob)
 
