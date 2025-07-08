@@ -1,3 +1,9 @@
+import Radar from "@/components/Radar"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import type { InputMethod, TalesTroveJSONType } from "@/types"
 import { isValidURL } from "@/utils"
@@ -5,9 +11,9 @@ import { useRef, useState } from "react"
 
 import { Storage } from "@plasmohq/storage"
 
-import "./style.css"
-
 import { cn } from "./lib/utils"
+
+import "./style.css"
 
 const storage = new Storage({ area: "local" })
 
@@ -183,7 +189,9 @@ export default function Popup() {
 
   return (
     <div className="w-96 min-h-96">
-      <div className="w-full aspect-video bg-[linear-gradient(90deg,#141142,#4143c7)]"></div>
+      <div className="w-full aspect-video flex justify-center items-center bg-[linear-gradient(90deg,#141142,#4143c7)]">
+        <Radar />
+      </div>
 
       <div className="p-4 flex flex-col gap-8 bg-fr-3 h-full text-white">
         <h1 className="text-6xl text-center font-bold">FicRadar</h1>
@@ -258,18 +266,69 @@ export default function Popup() {
             ref={formRef}
             onSubmit={handleFileFormatSubmit}
             className="flex flex-col gap-4">
-            <p className="text-sm text-gray-300">
-              Upload a{" "}
-              <a
-                href="https://github.com/Jemeni11/TalesTrove"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-fr-1 hover:underline">
-                TalesTrove
-              </a>{" "}
-              JSON/TXT file. Only XenForo Sites are supported.
-            </p>
+            <div className="inline-block whitespace-normal flex-wrap">
+              <span className="text-sm text-gray-300">Upload a&nbsp;</span>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <span className="text-sm cursor-help text-fr-1 underline-offset-2 underline inline-block">
+                    supported file (JSON/TXT)
+                  </span>
+                </PopoverTrigger>
+                <PopoverContent className="w-80 mx-8 bg-white text-sm space-y-4 rounded-xl shadow-md p-4 border border-gray-200">
+                  <h2 className="font-semibold text-xl text-gray-900">
+                    Supported File Formats
+                  </h2>
 
+                  <div className="space-y-1">
+                    <p>
+                      <span className="font-medium text-gray-800">JSON:</span>{" "}
+                      Should be a list of objects, each with an{" "}
+                      <code className="bg-gray-100 px-1 py-0.5 rounded text-[0.85em]">
+                        authorLink
+                      </code>
+                      .
+                    </p>
+                  </div>
+
+                  <div className="space-y-1">
+                    <p className="font-medium text-gray-800">TXT:</p>
+                    <ul className="list-disc list-inside ml-2 space-y-1 text-gray-700">
+                      <li>
+                        A plain author link, e.g.
+                        <br />
+                        <code className="bg-gray-100 px-1 py-0.5 rounded text-[0.85em] break-words">
+                          https://forums.spacebattles.com/members/example.12345/
+                        </code>
+                      </li>
+                      <li>
+                        Or a line like:
+                        <br />
+                        <code className="bg-gray-100 px-1 py-0.5 rounded text-[0.85em] break-words">
+                          Author Link:
+                          https://forums.sufficientvelocity.com/members/example.12345/
+                        </code>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <p className="text-gray-700">
+                    If you're using{" "}
+                    <a
+                      href="https://github.com/Jemeni11/TalesTrove"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-fr-1 underline font-medium">
+                      TalesTrove
+                    </a>
+                    , you're all set. Its JSON export and both TXT formats are
+                    fully supported.
+                  </p>
+                </PopoverContent>
+              </Popover>
+              <span className="text-sm text-gray-300">
+                .&nbsp;Only author links from XenForo forums are supported.
+              </span>
+            </div>
             <input
               id="file"
               name="file"
