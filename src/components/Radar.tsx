@@ -1,39 +1,4 @@
-import { useEffect, useState } from "react"
-
-type Ping = {
-  id: string
-  x: number
-  y: number
-}
-
 const Radar = () => {
-  const [pings, setPings] = useState<Ping[]>([])
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const angle = Math.random() * 2 * Math.PI
-      const radius = Math.random() * 40 // keep inside radar radius
-
-      const x = 40 + radius * Math.cos(angle)
-      const y = 40 + radius * Math.sin(angle)
-
-      const newPing: Ping = {
-        id: crypto.randomUUID(),
-        x,
-        y,
-      }
-
-      setPings((prev) => [...prev, newPing])
-
-      // Remove ping after 2s
-      setTimeout(() => {
-        setPings((prev) => prev.filter((p) => p.id !== newPing.id))
-      }, 4000)
-    }, 1000) // spawn every 0.8s
-
-    return () => clearInterval(interval)
-  }, [])
-
   return (
     <div className="relative w-40 min-h-40">
       {/* Static SVG Radar Base */}
@@ -103,19 +68,6 @@ const Radar = () => {
 
       {/* Sweep effect */}
       <div className="absolute top-0 left-0 w-full h-full rounded-full animate-spin-slow pointer-events-none [mask-image:radial-gradient(circle_at_center,black_90%,transparent_100%)] [background:conic-gradient(rgba(64,67,186,0.4)_0deg,rgba(64,67,186,0.1)_30deg,transparent_60deg,transparent_360deg)]" />
-
-      {/* Pings */}
-      {pings.map((ping) => (
-        <div
-          key={ping.id}
-          className="absolute w-1.5 h-1.5 bg-indigo-300 rounded-full animate-ping"
-          style={{
-            left: `${ping.x}px`,
-            top: `${ping.y}px`,
-            transform: "translate(-50%, -50%)",
-          }}
-        />
-      ))}
     </div>
   )
 }
