@@ -1,4 +1,12 @@
+import ExportButton from "@/components/ExportButton"
 import { SUPPORTED_SITES } from "@/constants"
+import {
+  BookmarksHTMLIcon,
+  CSVIcon,
+  HTMLIcon,
+  JSONIcon,
+  TXTIcon,
+} from "@/icons"
 import type {
   AuthorStatus,
   ProgressData,
@@ -259,37 +267,60 @@ export default function AuthorScrapeTab() {
             </a>
           </h1>
           {selectedAuthor?.status === "success" && (
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleDownloadTXT}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                Download TXT
-              </button>
-              <button
-                type="button"
-                onClick={handleDownloadJSON}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                Download JSON
-              </button>
-              <button
-                type="button"
-                onClick={handleDownloadCSV}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                Download CSV
-              </button>
-              <button
-                type="button"
-                onClick={handleDownloadHTML}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                Download HTML
-              </button>
-              <button
-                type="button"
-                onClick={handleDownloadBookmarkHTML}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                Download Bookmark HTML
-              </button>
+            <div className="mb-4">
+              <h2 className="text-sm text-gray-500 font-medium mb-2">
+                Export stories as:
+              </h2>
+              <div className="hidden md:flex flex-wrap gap-2 mb-4">
+                <ExportButton
+                  label="TXT"
+                  icon={<TXTIcon className="w-4 h-4" />}
+                  onClick={handleDownloadTXT}
+                />
+                <ExportButton
+                  label="JSON"
+                  icon={<JSONIcon className="w-4 h-4" />}
+                  onClick={handleDownloadJSON}
+                />
+                <ExportButton
+                  label="CSV"
+                  icon={<CSVIcon className="w-4 h-4" />}
+                  onClick={handleDownloadCSV}
+                />
+                <ExportButton
+                  label="HTML"
+                  icon={<HTMLIcon className="w-4 h-4" />}
+                  onClick={handleDownloadHTML}
+                />
+                <ExportButton
+                  label="Bookmark HTML"
+                  icon={<BookmarksHTMLIcon className="w-4 h-4" />}
+                  onClick={handleDownloadBookmarkHTML}
+                />
+              </div>
+
+              <div className="md:hidden mb-4">
+                <label className="text-sm text-gray-600 block mb-1">
+                  Export Format
+                </label>
+                <select
+                  className="w-full px-3 py-2 border rounded text-sm bg-white"
+                  onChange={(e) => {
+                    const format = e.target.value
+                    if (format === "txt") handleDownloadTXT()
+                    if (format === "json") handleDownloadJSON()
+                    if (format === "csv") handleDownloadCSV()
+                    if (format === "html") handleDownloadHTML()
+                    if (format === "bookmark") handleDownloadBookmarkHTML()
+                  }}>
+                  <option value="">Select format</option>
+                  <option value="txt">Download TXT</option>
+                  <option value="json">Download JSON</option>
+                  <option value="csv">Download CSV</option>
+                  <option value="html">Download HTML</option>
+                  <option value="bookmark">Download Bookmark HTML</option>
+                </select>
+              </div>
             </div>
           )}
         </div>
