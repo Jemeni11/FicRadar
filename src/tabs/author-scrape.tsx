@@ -221,12 +221,12 @@ export default function AuthorScrapeTab() {
 
   return (
     <div className="flex h-screen">
-      <aside className="w-64 bg-gray-50 border-r border-gray-200 overflow-auto">
-        <div className="w-full sticky">
+      <aside className="w-64 bg-gray-50 border-r border-gray-200 flex flex-col">
+        <div className="sticky top-0 bg-gray-50 z-10 space-y-4 border-b pb-4 w-full">
           <div className="p-4 font-bold text-lg border-b">Authors</div>
           <div className="my-8 px-4 text-sm text-gray-600">
             Progress: {completedCount}/{authors.length}
-            <div className="w-full h-2 bg-gray-200 rounded mt-1">
+            <div className="w-full h-2 bg-gray-200 rounded my-2">
               <div
                 className="h-full bg-purple-500 rounded transition-all duration-300"
                 style={{
@@ -235,29 +235,29 @@ export default function AuthorScrapeTab() {
               />
             </div>
           </div>
+          {completedCount === authors.length && authors.length > 1 && (
+            <div className="px-4 mb-6">
+              <label className="text-sm font-medium text-gray-700 block mb-1">
+                Export All Stories
+              </label>
+              <select
+                className="w-full px-3 py-2 border rounded text-sm bg-white"
+                onChange={(e) => {
+                  const format = e.target.value
+                  if (!format) return
+                  handleGlobalExport(authors, format)
+                }}>
+                <option value="">Select format</option>
+                <option value="txt">Download All as TXT</option>
+                <option value="json">Download All as JSON</option>
+                <option value="csv">Download All as CSV</option>
+                <option value="html">Download All as HTML</option>
+                <option value="bookmark">Download All as Bookmark HTML</option>
+              </select>
+            </div>
+          )}
         </div>
-        {completedCount === authors.length && authors.length > 1 && (
-          <div className="px-4 mb-6">
-            <label className="text-sm font-medium text-gray-700 block mb-1">
-              Export All Stories
-            </label>
-            <select
-              className="w-full px-3 py-2 border rounded text-sm bg-white"
-              onChange={(e) => {
-                const format = e.target.value
-                if (!format) return
-                handleGlobalExport(authors, format)
-              }}>
-              <option value="">Select format</option>
-              <option value="txt">Download All as TXT</option>
-              <option value="json">Download All as JSON</option>
-              <option value="csv">Download All as CSV</option>
-              <option value="html">Download All as HTML</option>
-              <option value="bookmark">Download All as Bookmark HTML</option>
-            </select>
-          </div>
-        )}
-        <ul>
+        <ul className="overflow-auto flex-1">
           {authors.map((author, idx) => (
             <li
               key={author.url}
@@ -358,7 +358,7 @@ export default function AuthorScrapeTab() {
             </div>
             <div className="my-8 text-sm text-gray-600">
               Page Progress: {progressData.page}/{progressData.totalPages}
-              <div className="w-full h-2 bg-gray-200 rounded mt-1">
+              <div className="w-full h-2 bg-gray-200 rounded my-2">
                 <div
                   className="h-full bg-purple-500 rounded transition-all duration-300"
                   style={{
