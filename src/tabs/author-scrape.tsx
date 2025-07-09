@@ -16,6 +16,7 @@ import type {
 import {
   delay,
   extractUsername,
+  handleGlobalExport,
   saveBookmarkHTMLFile,
   saveCSVFile,
   saveHTMLFile,
@@ -235,6 +236,27 @@ export default function AuthorScrapeTab() {
             </div>
           </div>
         </div>
+        {completedCount === authors.length && authors.length > 1 && (
+          <div className="px-4 mb-6">
+            <label className="text-sm font-medium text-gray-700 block mb-1">
+              Export All Stories
+            </label>
+            <select
+              className="w-full px-3 py-2 border rounded text-sm bg-white"
+              onChange={(e) => {
+                const format = e.target.value
+                if (!format) return
+                handleGlobalExport(authors, format)
+              }}>
+              <option value="">Select format</option>
+              <option value="txt">Download All as TXT</option>
+              <option value="json">Download All as JSON</option>
+              <option value="csv">Download All as CSV</option>
+              <option value="html">Download All as HTML</option>
+              <option value="bookmark">Download All as Bookmark HTML</option>
+            </select>
+          </div>
+        )}
         <ul>
           {authors.map((author, idx) => (
             <li
