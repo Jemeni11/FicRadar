@@ -3,6 +3,7 @@ import customError from "./customError"
 import delay from "./delay"
 import extractUsername from "./extractUsername"
 import getPaginatedSearchUrl from "./getPaginatedSearchUrl"
+import handleGlobalExport from "./handleGlobalExport"
 import isValidURL from "./isValidURL"
 import saveBookmarkHTMLFile from "./saveBookmarkHTMLFile"
 import saveCSVFile from "./saveCSVFile"
@@ -18,6 +19,7 @@ export {
   delay,
   extractUsername,
   getPaginatedSearchUrl,
+  handleGlobalExport,
   isValidURL,
   saveBookmarkHTMLFile,
   saveCSVFile,
