@@ -5,6 +5,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { BuyMeACoffeeIcon, GitHubSponsorsIcon, LinkOutIcon } from "@/icons"
 import type { InputMethod, TalesTroveJSONType } from "@/types"
 import { isValidURL } from "@/utils"
 import { useRef, useState } from "react"
@@ -188,13 +189,22 @@ export default function Popup() {
   }
 
   return (
-    <div className="w-96 min-h-96">
+    <div className="w-96 min-h-[400px]">
       <div className="w-full aspect-video flex justify-center items-center bg-[linear-gradient(90deg,#141142,#4143c7)]">
         <Radar />
       </div>
 
       <div className="p-4 flex flex-col gap-8 bg-fr-3 h-full text-white">
-        <h1 className="text-6xl text-center font-bold">FicRadar</h1>
+        <div className="w-full text-center my-2">
+          <h1 className="text-6xl font-bold mb-2">FicRadar</h1>
+          <a
+            href="https://github.com/Jemeni11/FicRadar"
+            target="_blank"
+            rel="noreferrer"
+            className="hover:text-fr-1 text-lg underline underline-offset-2">
+            Project Docs »
+          </a>
+        </div>
         <ToggleGroup
           type="single"
           className="border-fr-1 rounded-3xl p-1.5 flex w-full border border-solid"
@@ -257,8 +267,9 @@ export default function Popup() {
             <button
               type="submit"
               disabled={isScanning || !currentUrl.trim() || !!urlError}
-              className="w-full rounded-3xl text-lg bg-fr-1 text-center py-1.5 disabled:opacity-50">
-              {isScanning ? "Scanning..." : "Scan Link"}
+              className="w-full inline-flex justify-center items-center gap-2 rounded-3xl text-lg bg-fr-1 text-center py-1.5 disabled:opacity-50">
+              <span>{isScanning ? "Scanning..." : "Scan Link"}</span>
+              <LinkOutIcon className="size-4" />
             </button>
           </form>
         ) : (
@@ -266,7 +277,7 @@ export default function Popup() {
             ref={formRef}
             onSubmit={handleFileFormatSubmit}
             className="flex flex-col gap-4">
-            <div className="inline-block whitespace-normal flex-wrap">
+            <div className="inline-block text-center whitespace-normal flex-wrap">
               <span className="text-sm text-gray-300">Upload a&nbsp;</span>
               <Popover>
                 <PopoverTrigger asChild>
@@ -350,21 +361,37 @@ export default function Popup() {
 
             <Popover>
               <PopoverTrigger asChild>
-                <span className="text-base cursor-help text-red-700">
-                  ⚠️ Warning
+                <span className="text-base w-full text-center cursor-help text-yellow-600 font-medium">
+                  ⚠️ Caution
                 </span>
               </PopoverTrigger>
-              <PopoverContent className="w-80 mx-8 bg-white text-sm space-y-4 rounded-sm shadow-md p-4 border border-gray-200">
-                <p>
-                  Some browsers (like Firefox) clear file inputs when the popup
-                  closes — often right after the file dialog opens. If your file
-                  isn't processed, try using Chrome or Edge instead.
-                  <br />
-                  <br />
-                  Or, just open the file on your device, copy the contents, and
-                  paste them into the textarea below. (You can also paste a
-                  single story link if that's all you need.)
+
+              <PopoverContent className="w-80 mx-8 bg-white text-sm space-y-4 rounded-sm shadow-md p-4 border border-yellow-300">
+                <h2 className="text-base font-semibold text-yellow-800">
+                  File upload may fail in some browsers
+                </h2>
+
+                <p className="text-gray-700">
+                  In some browsers, file inputs inside extension popups often
+                  get cleared as soon as the popup loses focus — like right
+                  after selecting a file.
                 </p>
+
+                <p className="text-gray-700">
+                  If your upload keeps disappearing, try using Chrome/Edge, or
+                  open the full upload page instead.
+                </p>
+
+                <button
+                  className="w-full inline-flex justify-center items-center gap-2 rounded-3xl text-base bg-fr-1 text-white text-center py-1.5 hover:bg-fr-2 transition-colors"
+                  onClick={() => {
+                    chrome.tabs.create({
+                      url: chrome.runtime.getURL("tabs/file-upload.html"),
+                    })
+                  }}>
+                  <span>Open Upload Page</span>
+                  <LinkOutIcon className="size-4" />
+                </button>
               </PopoverContent>
             </Popover>
 
@@ -382,12 +409,44 @@ export default function Popup() {
             <button
               type="submit"
               disabled={isUploading || !selectedFileName?.trim()}
-              className="w-full rounded-3xl text-lg bg-fr-1 text-center py-1.5 disabled:opacity-50">
-              {isUploading ? "Processing..." : "Upload & Scan"}
+              className="w-full inline-flex justify-center items-center gap-2 rounded-3xl text-lg bg-fr-1 text-center py-1.5 disabled:opacity-50">
+              <span>{isUploading ? "Processing..." : "Upload & Scan"}</span>
+              <LinkOutIcon className="size-4" />
             </button>
           </form>
         )}
       </div>
+
+      <footer className="text-sm bg-fr-3 text-white text-center py-4 space-y-3">
+        <p>
+          Made with <span className="text-red-500">❤️</span> by{" "}
+          <a
+            href="https://github.com/Jemeni11"
+            target="_blank"
+            rel="noreferrer"
+            className="text-fr-1 underline underline-offset-2 font-medium">
+            Jemeni
+          </a>
+        </p>
+
+        <div className="flex w-full justify-center items-center gap-4">
+          <span>Support me on: </span>
+          <p className="flex justify-center gap-2">
+            <a
+              href="https://www.buymeacoffee.com/jemeni"
+              target="_blank"
+              rel="noopener noreferrer">
+              <BuyMeACoffeeIcon />
+            </a>
+            <a
+              href="https://github.com/sponsors/Jemeni11"
+              target="_blank"
+              rel="noopener noreferrer">
+              <GitHubSponsorsIcon />
+            </a>
+          </p>
+        </div>
+      </footer>
     </div>
   )
 }
