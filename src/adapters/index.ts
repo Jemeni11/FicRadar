@@ -5,5 +5,5 @@ import getSufficientVelocityData from "./sufficientvelocity"
 export {
   getQuestionableQuestingData,
   getSpaceBattlesData,
-  getSufficientVelocityData
+  getSufficientVelocityData,
 }

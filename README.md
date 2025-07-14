@@ -88,7 +88,6 @@ This project is built with the [Plasmo](https://docs.plasmo.com/) framework.
 
 1. Enable Developer Mode in Chrome or Firefox.
 2. Visit the [Releases Page](https://github.com/Jemeni11/FicRadar/releases) and download:
-
    - `chrome-mv3-prod.zip` for Chromium browsers
    - `firefox-mv2-prod.zip` for Firefox
 

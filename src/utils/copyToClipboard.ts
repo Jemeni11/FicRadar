@@ -25,7 +25,7 @@ function unsecuredCopyToClipboard(text: string): boolean {
 
 export default function copyToClipboard(
   content: string,
-  successMessage?: string
+  successMessage?: string,
 ): void {
   const defaultMessage = "Copied to clipboard!"
   const message = successMessage || defaultMessage
