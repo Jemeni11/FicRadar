@@ -63,7 +63,7 @@ const scrapeAuthor = async (
     return data
   } catch (err) {
     console.error(err)
-    throw err
+    return []
   }
 }
 
@@ -75,6 +75,7 @@ export default function AuthorScrapeTab() {
     totalPages: 0,
     found: 0,
   })
+  const [hasStartedScraping, setHasStartedScraping] = useState(false)
 
   const updateStatus = (
     index: number,
@@ -93,6 +94,8 @@ export default function AuthorScrapeTab() {
   }
 
   const scrapeAllAuthors = async (authorList: AuthorStatus[]) => {
+    console.log("🔍 scrapeAllAuthors called with:", authorList)
+
     for (let i = 0; i < authorList.length; i++) {
       console.log(authorList)
       console.log(authorList[i])
@@ -165,54 +168,59 @@ export default function AuthorScrapeTab() {
 
   useEffect(() => {
     const init = async () => {
-      const [batchList, singleURL] = await Promise.all([
-        storage.get("batchAuthorStories"),
-        storage.get("singleAuthorURL"),
-      ])
+      try {
+        const [batchList, singleURL] = await Promise.all([
+          storage.get("batchAuthorStories"),
+          storage.get("singleAuthorURL"),
+        ])
 
-      let links: string[] = []
+        let links: string[] = []
 
-      if (Array.isArray(batchList)) {
-        links = batchList
-      } else if (typeof singleURL === "string" && singleURL.trim()) {
-        links = [singleURL]
-      }
-
-      console.log(links)
-
-      const deduped = Array.from(new Set(links)).filter((url) => {
-        try {
-          const hostname = new URL(url).hostname
-          return hostname in SUPPORTED_SITES
-        } catch {
-          return false
+        if (Array.isArray(batchList)) {
+          links = batchList
+        } else if (typeof singleURL === "string" && singleURL.trim()) {
+          links = [singleURL]
         }
-      })
 
-      console.log(deduped)
+        const deduped = Array.from(new Set(links)).filter((url) => {
+          try {
+            const hostname = new URL(url).hostname
+            return hostname in SUPPORTED_SITES
+          } catch {
+            return false
+          }
+        })
 
-      if (deduped.length === 0) {
-        console.warn("No valid URLs found to scrape")
-        return
+        console.log("Links: ", links)
+        console.log("Deduped Links: ", deduped)
+
+        if (deduped.length === 0) {
+          console.warn("No valid URLs found to scrape")
+          return
+        }
+
+        const authorStates: AuthorStatus[] = deduped.map((url) => ({
+          name: extractUsername(url) ?? "Unknown",
+          url,
+          status: "queued",
+          stories: [],
+        }))
+
+        setAuthors(authorStates)
+        setHasStartedScraping(true)
+      } catch (err) {
+        console.error("Top-level init error", err)
       }
-
-      const authorStates: AuthorStatus[] = deduped.map((url) => ({
-        name: extractUsername(url) ?? "Unknown",
-        url,
-        status: "queued",
-        stories: [],
-      }))
-
-      console.log(authorStates)
-
-      setAuthors(authorStates)
-
-      // Start scraping
-      scrapeAllAuthors(authorStates)
     }
 
     init()
   }, [])
+
+  useEffect(() => {
+    if (hasStartedScraping) {
+      scrapeAllAuthors(authors)
+    }
+  }, [hasStartedScraping])
 
   const selectedAuthor = authors[selectedAuthorIndex]
   const completedCount = authors.filter(
