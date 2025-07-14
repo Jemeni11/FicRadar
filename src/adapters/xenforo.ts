@@ -84,6 +84,14 @@ async function getXenForoData(
 
         const doc = await getDocument(pageUrl)
         const ol: HTMLOListElement | null = doc.querySelector("ol.block-body")
+        const message = doc.querySelector(".blockMessage")?.textContent?.trim()
+
+        if (!ol && message === "No results found.") {
+          console.info(
+            `[${adapterName}] No results on this page — likely end of results.`,
+          )
+          return
+        }
 
         if (!ol) {
           customError(adapterName, "There's no data for this link")
