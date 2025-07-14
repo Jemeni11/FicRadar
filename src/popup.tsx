@@ -274,7 +274,7 @@ export default function Popup() {
                     supported file (JSON/TXT)
                   </span>
                 </PopoverTrigger>
-                <PopoverContent className="w-80 mx-8 bg-white text-sm space-y-4 rounded-xl shadow-md p-4 border border-gray-200">
+                <PopoverContent className="w-80 max-h-[320px] overflow-y-auto mx-8 bg-white text-sm space-y-4 rounded-sm shadow-md p-4 border border-gray-200">
                   <h2 className="font-semibold text-xl text-gray-900">
                     Supported File Formats
                   </h2>
@@ -320,8 +320,12 @@ export default function Popup() {
                       className="text-fr-1 underline font-medium">
                       TalesTrove
                     </a>
-                    , you're all set. Its JSON export and both TXT formats are
-                    fully supported.
+                    , you're all set. Its JSON and main TXT format are fully
+                    supported.
+                    <br />
+                    <br />
+                    LinksOnlyTXT is not supported. Those are story links not
+                    author links.
                   </p>
                 </PopoverContent>
               </Popover>
