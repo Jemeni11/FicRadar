@@ -5,6 +5,7 @@ import { Storage } from "@plasmohq/storage"
 
 import "../style.css"
 
+import { LinkOutIcon } from "@/icons"
 import { cn } from "@/lib/utils"
 
 const storage = new Storage({ area: "local" })
@@ -193,8 +194,9 @@ export default function FileUploadTab() {
           <button
             type="submit"
             disabled={isUploading || !selectedFileName?.trim()}
-            className="w-full rounded-3xl text-lg bg-fr-1 text-center py-1.5 text-white disabled:opacity-75">
-            {isUploading ? "Processing..." : "Upload & Scan"}
+            className="w-full inline-flex justify-center items-center gap-2 rounded-3xl text-lg bg-fr-1 text-center py-1.5 disabled:opacity-50">
+            <span>{isUploading ? "Processing..." : "Upload & Scan"}</span>
+            <LinkOutIcon className="size-4" />
           </button>
         </form>
       </main>
