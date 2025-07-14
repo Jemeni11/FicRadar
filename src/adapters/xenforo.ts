@@ -27,13 +27,123 @@ async function getXenForoData(
       credentials: "include",
       headers: { "User-Agent": navigator.userAgent },
     })
+    const html = await response.text()
+    const document = parseHTML(html).document
 
     if (response.status === 403 || response.status === 401) {
-      customError(adapterName, "User isn't logged in")
+      const blockMessage = document
+        .querySelector(".blockMessage")
+        ?.textContent?.trim()
+
+      if (blockMessage === "This user's profile is not available.") {
+        customError(adapterName, blockMessage)
+      } else {
+        customError(adapterName, "User isn't logged in")
+      }
     }
 
-    const html = await response.text()
-    return parseHTML(html).document
+    return document
+  }
+
+  async function collectPaginatedResults(
+    adapterName: string,
+    baseURL: string,
+    initialUrl: string,
+    data: StoryResult[],
+    progressCallback?: (progress: ProgressData) => void,
+    segmentIndex: number = 0,
+  ): Promise<void> {
+    const firstPageDoc = await getDocument(initialUrl)
+
+    const nav = firstPageDoc.querySelector("nav.pageNavWrapper ul.pageNav-main")
+    const last = nav?.lastElementChild?.textContent
+    const totalPages = parseInt(last ?? "1", 10)
+
+    const sampleLink = nav?.querySelector(
+      "a[href*='page=']",
+    ) as HTMLAnchorElement | null
+    const sampleHref = sampleLink?.getAttribute("href") || ""
+
+    const urlTemplate = sampleHref
+      ? new URL(withDomain(baseURL, sampleHref))
+      : new URL(initialUrl)
+
+    const basePath = urlTemplate.origin + urlTemplate.pathname
+    const baseParams = urlTemplate.searchParams
+    const pageParamName = "page"
+
+    for (let pageNo = 1; pageNo <= totalPages; pageNo++) {
+      try {
+        const params = new URLSearchParams(baseParams)
+        params.set(pageParamName, String(pageNo))
+        const pageUrl = `${basePath}?${params.toString()}`
+
+        const doc = await getDocument(pageUrl)
+        const ol: HTMLOListElement | null = doc.querySelector("ol.block-body")
+
+        if (!ol) {
+          customError(adapterName, "There's no data for this link")
+        }
+
+        const liArray = Array.from(ol.children) as HTMLLIElement[]
+        liArray.forEach((li) => {
+          const anchor = li.querySelector(
+            ".contentRow-main h3.contentRow-title > a",
+          ) as HTMLAnchorElement
+          if (
+            !anchor?.textContent ||
+            !anchor.href ||
+            anchor.href.startsWith("/profile-posts/")
+          )
+            return
+
+          const title = anchor.textContent.trim()
+          const href = removePostNumber(withDomain(baseURL, anchor.href))
+          const existing = data.find((d) => d.title === title)
+          existing
+            ? existing.count++
+            : data.push({ title, link: href, count: 1 })
+        })
+
+        progressCallback?.({ page: pageNo, totalPages, found: data.length })
+
+        // Only delay if there are more pages ahead
+        if (pageNo < totalPages) {
+          await delay(4000)
+        }
+
+        // Check for "View older results" *on the last page*
+        if (pageNo === totalPages) {
+          const viewOlder = ol.nextElementSibling?.querySelector(
+            "a.button--link.button",
+          ) as HTMLAnchorElement | null
+          if (viewOlder?.href) {
+            const nextURL = withDomain(baseURL, viewOlder.href)
+            if (segmentIndex > 10) {
+              customError(
+                adapterName,
+                "Too many 'older results' segments. Aborting to prevent infinite loop.",
+              )
+            }
+            await delay(4000)
+            await collectPaginatedResults(
+              adapterName,
+              baseURL,
+              nextURL,
+              data,
+              progressCallback,
+              segmentIndex + 1,
+            )
+          }
+        }
+      } catch (error) {
+        customError(
+          adapterName,
+          `Failed to fetch data from page ${pageNo}`,
+          error,
+        )
+      }
+    }
   }
 
   const profileDoc = await getDocument(userUrl)
@@ -50,93 +160,14 @@ async function getXenForoData(
     ? withDomain(baseURL, link.href)
     : link.href
 
-  try {
-    const firstPageDoc = await getDocument(pageUrl)
-
-    const nav = firstPageDoc.querySelector("nav.pageNavWrapper ul.pageNav-main")
-    const last = nav?.lastElementChild?.textContent
-    const totalPages = parseInt(last ?? "1", 10)
-
-    const sampleLink = nav?.querySelector(
-      "a[href*='page=']",
-    ) as HTMLAnchorElement | null
-    const sampleHref = sampleLink?.getAttribute("href") || ""
-
-    const urlTemplate = sampleHref
-      ? new URL(withDomain(baseURL, sampleHref))
-      : new URL(pageUrl)
-
-    const basePath = urlTemplate.origin + urlTemplate.pathname
-    const baseParams = urlTemplate.searchParams
-    const pageParamName = "page"
-
-    const urls: string[] = []
-
-    for (let i = 1; i <= totalPages; i++) {
-      const params = new URLSearchParams(baseParams)
-      params.set(pageParamName, String(i))
-      urls.push(`${basePath}?${params.toString()}`)
-    }
-
-    for (let pageNo = 1; pageNo <= urls.length; pageNo++) {
-      try {
-        const doc = await getDocument(urls[pageNo - 1])
-        const ol: HTMLOListElement | null = doc.querySelector("ol.block-body")
-
-        if (!ol) {
-          customError(adapterName, "There's no data for this site")
-        }
-
-        const liArray = Array.from(ol.children) as HTMLLIElement[]
-        liArray.forEach((li) => {
-          const anchor = li.querySelector(
-            ".contentRow-main h3.contentRow-title > a",
-          ) as HTMLAnchorElement
-
-          if (
-            !anchor?.textContent ||
-            !anchor.href ||
-            anchor.href.startsWith("/profile-posts/")
-          )
-            return
-
-          const title = anchor.textContent?.trim()
-          const href = removePostNumber(withDomain(baseURL, anchor.href))
-
-          const existing = data.find((d) => d.title === title)
-
-          if (existing) {
-            existing.count++
-          } else {
-            data.push({
-              title: title,
-              link: href,
-              count: 1,
-            })
-          }
-        })
-
-        if (progressCallback) {
-          progressCallback({ page: pageNo, totalPages, found: data.length })
-        }
-
-        if (pageNo < totalPages) {
-          console.log("Delaying for 4 seconds")
-          await delay(4000)
-        }
-      } catch (error) {
-        customError(
-          adapterName,
-          `Failed to fetch data from page ${pageNo}`,
-          error,
-        )
-      }
-    }
-
-    return data
-  } catch (error) {
-    customError(adapterName, "An error occurred while fetching data", error)
-  }
+  await collectPaginatedResults(
+    adapterName,
+    baseURL,
+    pageUrl,
+    data,
+    progressCallback,
+  )
+  return data
 }
 
 export default getXenForoData
