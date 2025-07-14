@@ -52,17 +52,21 @@ async function getXenForoData(
     data: StoryResult[],
     progressCallback?: (progress: ProgressData) => void,
     segmentIndex: number = 0,
-  ): Promise<void> {
+    pageOffset: number = 0,
+  ): Promise<number> {
+    console.log(
+      `[${adapterName}] Starting segment ${segmentIndex + 1}...\nURL: ${initialUrl}`,
+    )
+
     const firstPageDoc = await getDocument(initialUrl)
 
     const nav = firstPageDoc.querySelector("nav.pageNavWrapper ul.pageNav-main")
-    const last = nav?.lastElementChild?.textContent
-    const totalPages = parseInt(last ?? "1", 10)
-
     const sampleLink = nav?.querySelector(
       "a[href*='page=']",
     ) as HTMLAnchorElement | null
     const sampleHref = sampleLink?.getAttribute("href") || ""
+    const last = nav?.lastElementChild?.textContent
+    const totalPages = sampleLink ? parseInt(last ?? "1", 10) : 1
 
     const urlTemplate = sampleHref
       ? new URL(withDomain(baseURL, sampleHref))
@@ -105,7 +109,11 @@ async function getXenForoData(
             : data.push({ title, link: href, count: 1 })
         })
 
-        progressCallback?.({ page: pageNo, totalPages, found: data.length })
+        progressCallback?.({
+          page: pageOffset + pageNo,
+          totalPages: pageOffset + totalPages,
+          found: data.length,
+        })
 
         // Only delay if there are more pages ahead
         if (pageNo < totalPages) {
@@ -119,13 +127,17 @@ async function getXenForoData(
           ) as HTMLAnchorElement | null
           if (viewOlder?.href) {
             const nextURL = withDomain(baseURL, viewOlder.href)
+            const nextOffset = pageOffset + totalPages
+
             if (segmentIndex > 10) {
               customError(
                 adapterName,
                 "Too many 'older results' segments. Aborting to prevent infinite loop.",
               )
             }
+
             await delay(4000)
+
             await collectPaginatedResults(
               adapterName,
               baseURL,
@@ -133,40 +145,52 @@ async function getXenForoData(
               data,
               progressCallback,
               segmentIndex + 1,
+              nextOffset,
             )
           }
         }
       } catch (error) {
-        customError(
-          adapterName,
-          `Failed to fetch data from page ${pageNo}`,
-          error,
-        )
+        console.warn(`[${adapterName}] Skipping page ${pageNo} due to error`)
+        console.error(error)
+        continue
       }
     }
+
+    return pageOffset + totalPages
   }
 
-  const profileDoc = await getDocument(userUrl)
+  try {
+    console.log("🔍 Scraping started for:", userUrl)
+    const profileDoc = await getDocument(userUrl)
 
-  const link = profileDoc.querySelector(
-    'a.menu-linkRow[href^="/search/member?user_id="]',
-  ) as HTMLAnchorElement | null
+    const link = profileDoc.querySelector(
+      'a.menu-linkRow[href^="/search/member?user_id="]',
+    ) as HTMLAnchorElement | null
 
-  if (!link) {
-    customError(adapterName, "Could not find user content link")
+    if (!link) {
+      customError(adapterName, "Could not find user content link")
+    }
+
+    const pageUrl = link.href.startsWith("/")
+      ? withDomain(baseURL, link.href)
+      : link.href
+
+    await collectPaginatedResults(
+      adapterName,
+      baseURL,
+      pageUrl,
+      data,
+      progressCallback,
+      0,
+      0,
+    )
+  } catch (err) {
+    console.warn(
+      `[${adapterName}] Error during scrape. Returning partial results.`,
+    )
+    console.error(err)
   }
 
-  const pageUrl = link.href.startsWith("/")
-    ? withDomain(baseURL, link.href)
-    : link.href
-
-  await collectPaginatedResults(
-    adapterName,
-    baseURL,
-    pageUrl,
-    data,
-    progressCallback,
-  )
   return data
 }
 
