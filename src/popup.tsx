@@ -348,6 +348,26 @@ export default function Popup() {
               }}
             />
 
+            <Popover>
+              <PopoverTrigger asChild>
+                <span className="text-base cursor-help text-red-700">
+                  ⚠️ Warning
+                </span>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 mx-8 bg-white text-sm space-y-4 rounded-sm shadow-md p-4 border border-gray-200">
+                <p>
+                  Some browsers (like Firefox) clear file inputs when the popup
+                  closes — often right after the file dialog opens. If your file
+                  isn't processed, try using Chrome or Edge instead.
+                  <br />
+                  <br />
+                  Or, just open the file on your device, copy the contents, and
+                  paste them into the textarea below. (You can also paste a
+                  single story link if that's all you need.)
+                </p>
+              </PopoverContent>
+            </Popover>
+
             <label
               htmlFor="file"
               className={cn(
