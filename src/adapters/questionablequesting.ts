@@ -4,7 +4,7 @@ import getXenForoData from "./xenforo"
 
 async function getQuestionableQuestingData(
   userURL: string,
-  progressCallback?: (progress: ProgressData) => void,
+  progressCallback: (progress: ProgressData) => void,
 ): Promise<StoryResult[]> {
   const adapterName = "QuestionableQuestingAdapter"
   const baseURL = "https://forum.questionablequesting.com"

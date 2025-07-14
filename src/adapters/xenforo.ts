@@ -1,6 +1,9 @@
 import type { ProgressData, StoryResult } from "@/types"
 import { customError, delay, withDomain } from "@/utils"
-import { parseHTML } from "linkedom"
+
+function parseHTMLDocument(html: string): Document {
+  return new DOMParser().parseFromString(html, "text/html")
+}
 
 // Remove everything after the last slash if it starts with "post-"
 function removePostNumber(url: string): string {
@@ -17,7 +20,7 @@ async function getXenForoData(
   adapterName: string,
   baseURL: string,
   userUrl: string,
-  progressCallback?: (progress: ProgressData) => void,
+  progressCallback: (progress: ProgressData) => void,
 ): Promise<StoryResult[]> {
   const data: StoryResult[] = []
 
@@ -28,7 +31,7 @@ async function getXenForoData(
       headers: { "User-Agent": navigator.userAgent },
     })
     const html = await response.text()
-    const document = parseHTML(html).document
+    const document = parseHTMLDocument(html)
 
     if (response.status === 403 || response.status === 401) {
       const blockMessage = document
@@ -50,7 +53,7 @@ async function getXenForoData(
     baseURL: string,
     initialUrl: string,
     data: StoryResult[],
-    progressCallback?: (progress: ProgressData) => void,
+    progressCallback: (progress: ProgressData) => void,
     segmentIndex: number = 0,
     pageOffset: number = 0,
   ): Promise<number> {
@@ -142,7 +145,7 @@ async function getXenForoData(
             : data.push({ title, link: href, count: 1 })
         })
 
-        progressCallback?.({
+        progressCallback({
           page: pageOffset + pageNo,
           totalPages: pageOffset + totalPages,
           found: data.length,
