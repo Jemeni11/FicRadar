@@ -381,7 +381,7 @@ export default function AuthorScrapeTab() {
 
         {selectedAuthor?.status === "error" && (
           <div className="text-red-600 font-semibold">
-            ❌ Failed to scrape this author.
+            ❌ Failed to scrape this author. Check the console for more info.
           </div>
         )}
 
