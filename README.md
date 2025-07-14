@@ -19,7 +19,6 @@
 ## Table of Contents
 
 - [Table of Contents](#table-of-contents)
-- [Todo](#todo)
 - [Introduction](#introduction)
 - [Supported Sites](#supported-sites)
 - [Planned Support](#planned-support)
@@ -42,19 +41,9 @@
 - [License](#license)
 - [Changelog](#changelog)
 
-## Todo
-
-- Message to show if profile is hidden
-- If profile has no content
-- If profile has a `view older` button
-- when all scraping is done, overall download button
-- current download buttons are ugly
-- add logo to popup
-- add dialog explaining the format to popup
-
 ## Introduction
 
-**FicRadar** is a browser extension that extracts and ranks fanfiction links from user-visible forum posts and interactions. It helps you discover stories that people (especially your favorite authors) frequently interact with—without needing to ask them.
+**FicRadar** is a browser extension that extracts and ranks fanfiction links from user-visible forum posts and interactions. It helps you discover stories that people (especially your favorite authors) frequently interact with—by scraping and ranking their forum activity.
 
 This project is built with the [Plasmo](https://docs.plasmo.com/) framework.
 
@@ -76,8 +65,8 @@ This project is built with the [Plasmo](https://docs.plasmo.com/) framework.
 
 ## Features
 
-- Scrapes fanfiction links from visible forum posts
-- Counts and ranks by frequency (for forums)
+- Scrapes story links from all user forum posts (except profile posts)
+- Counts and ranks by frequency (for forums, including older posts)
 - No tracking, no saved data—everything is ephemeral
 - Export links in multiple formats:
   - JSON
@@ -126,7 +115,7 @@ pnpm dev
 #### Production Build
 
 ```bash
-pnpm build        # Chrome
+pnpm build          # Chrome
 pnpm build:firefox  # Firefox
 ```
 
@@ -138,21 +127,21 @@ Then load the resulting build folder as an unpacked extension.
 
 > You must be logged in to the forum for data to be extracted.
 
-1. Navigate to a supported user profile page and copy the url.
+1. Navigate to a supported user profile page and copy the URL.
 2. Click the FicRadar icon.
 3. Paste the URL or, upload a supported file. See the [supported files](#supported-files) section for more info.
-4. The extension will open a new tab and scan for fanfiction links.
+4. The extension will open a new tab and scrape the author's forum activity for fanfiction links.
 5. Export the results in your preferred format.
 
 ### Supported Files
 
-- [TalesTrove](https://www.github.com/Jemeni11/TalesTrove) TXT (Both Linksonly and regular) and JSON
+- [TalesTrove](https://www.github.com/Jemeni11/TalesTrove) TXT (Regular. LinksOnlyTXT isn't supported) and JSON
 - TXT file with line breaks separating each link, or with lines like: `Author Link: https://...`
 - JSON files with a `authorLink` field.
 
 ### Example Workflows
 
-Downloading the stories gotten:
+Downloading the stories found:
 
 #### With [fichub-cli](https://github.com/FicHub/fichub-cli)
 
@@ -171,7 +160,7 @@ fanficfare -i stoleThunderNotLightning_stories.txt
 ## FAQ
 
 **Do you store my data?**  
-Yes. Only on your own device. The extension makes use of the storage API (Add link) to send your data from the popup to the new tab. Your data isn't sent anywhere else. You can open the network tab on the new tab page to confirm. FicRadar doesn’t track, save, or upload anything.
+Yes. Only on your own device. The extension uses the browser’s local storage to transfer data between components (from the popup to the open tab). Your data isn't sent anywhere else. You can open the network tab on the new tab page to confirm. FicRadar doesn’t track, save, or upload anything.
 
 **Why do I need to be logged in?**  
 Because some platforms (like QQ on some pages and AO3) require login to access subscription data. You could try without it. It could work. This hasn't been tested.
