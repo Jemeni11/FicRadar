@@ -83,10 +83,35 @@ async function getXenForoData(
         const pageUrl = `${basePath}?${params.toString()}`
 
         const doc = await getDocument(pageUrl)
-        const ol: HTMLOListElement | null = doc.querySelector("ol.block-body")
-        const message = doc.querySelector(".blockMessage")?.textContent?.trim()
 
-        if (!ol && message === "No results found.") {
+        const blockMessages = Array.from(
+          doc.querySelectorAll(".blockMessage"),
+        ) as HTMLElement[]
+
+        const trimmedMessages = blockMessages.map(
+          (el) => el.textContent?.trim() ?? "",
+        )
+
+        // Case: new profile, no content ever
+        if (
+          trimmedMessages.some((msg) =>
+            /has not posted any content recently\.$/i.test(msg),
+          )
+        ) {
+          console.info(
+            `[${adapterName}] This user hasn't posted any content recently. Skipping...`,
+          )
+          return
+        }
+
+        const ol: HTMLOListElement | null = doc.querySelector("ol.block-body")
+
+        // Case: this page has no results (end of "view older results" segment)
+        if (
+          trimmedMessages.length === 1 &&
+          trimmedMessages[0] === "No results found." &&
+          !ol
+        ) {
           console.info(
             `[${adapterName}] No results on this page — likely end of results.`,
           )
