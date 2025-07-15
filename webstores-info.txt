@@ -1,0 +1,61 @@
+BUILD INSTRUCTIONS
+
+
+FicRadar is a browser extension that extracts and ranks fanfiction links from public forum activity. It helps users discover the stories others frequently recommend—especially by tracking what their favorite authors read, post, and engage with.
+
+Build Instructions:
+
+Requirements:
+
+OS: Windows 11 Pro
+
+Version: 21H2
+
+OS build: 22000.2538
+
+Experience: Windows Feature Experience Pack 1000.22001.1000.0
+
+Node.js: v22.13.0
+
+pnpm: v10.12.4
+
+Setup:
+
+git clone https://github.com/Jemeni11/FicRadar.git
+cd FicRadar
+pnpm install
+
+Build (Production):
+
+pnpm build             # Builds for both Chrome and Firefox
+
+Optional:
+
+pnpm build:chrome      # Chrome-only build
+pnpm build:firefox        # Firefox-only build
+
+pnpm buildZip          # Builds and zips both
+pnpm buildZip:chrome   # Zip Chrome-only
+pnpm buildZip:firefox  # Zip Firefox-only
+
+The output will be located in the build/ directory.
+
+
+BROSWER DESCRIPTION
+
+
+FicRadar is a browser extension that scrapes fanfiction links from public forum posts on SpaceBattles, Sufficient Velocity, and Questionable Questing. It looks at what people are replying to across their post history, and ranks those links by frequency.
+
+You can scrape a single user profile or upload a file with multiple author links. The extension supports TXT and JSON files, including those exported from TalesTrove (https://github.com/Jemeni11/TalesTrove). 
+
+Everything happens locally. There's no tracking, no background syncing, and no data is sent to any external server.
+
+Once the scrape is done, you can export your results in multiple formats:
+
+- JSON
+- CSV
+- Plain TXT (links-only)
+- HTML
+- Browser-importable bookmarks
+
+Want to download everything you find? The exported TXT format works great with tools like fichub-cli (https://github.com/FicHub/fichub-cli) and FanFicFare (https://github.com/JimmXinu/FanFicFare).
