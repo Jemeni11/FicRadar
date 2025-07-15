@@ -63,6 +63,10 @@ async function getXenForoData(
 
     const firstPageDoc = await getDocument(initialUrl)
 
+    const base = firstPageDoc.createElement("base")
+    base.href = baseURL
+    firstPageDoc.head.prepend(base)
+
     const nav = firstPageDoc.querySelector("nav.pageNavWrapper ul.pageNav-main")
     const sampleLink = nav?.querySelector(
       "a[href*='page=']",
@@ -196,8 +200,15 @@ async function getXenForoData(
   }
 
   try {
-    console.log("🔍 Scraping started for:", userUrl)
-    const profileDoc = await getDocument(userUrl)
+    const firstLink = withDomain(baseURL, userUrl)
+
+    console.log("🔍 Scraping started for:", firstLink)
+
+    const profileDoc = await getDocument(firstLink)
+
+    const base = profileDoc.createElement("base")
+    base.href = baseURL
+    profileDoc.head.prepend(base)
 
     const link = profileDoc.querySelector(
       'a.menu-linkRow[href^="/search/member?user_id="]',
@@ -207,9 +218,7 @@ async function getXenForoData(
       customError(adapterName, "Could not find user content link")
     }
 
-    const pageUrl = link.href.startsWith("/")
-      ? withDomain(baseURL, link.href)
-      : link.href
+    const pageUrl = link.href
 
     await collectPaginatedResults(
       adapterName,
