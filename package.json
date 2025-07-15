@@ -2,7 +2,7 @@
   "name": "ficradar",
   "displayName": "Ficradar",
   "version": "1.0.0",
-  "description": "FicRadar is a browser extension that helps fanfiction readers discover frequently recommended stories by extracting and ranking fanfic links from public online interactions.",
+  "description": "Discover top fanfics from public recommendations and forum activity.",
   "author": "Emmanuel C. Jemeni <emmanueljemeni@gmail.com>",
   "scripts": {
     "dev": "plasmo dev",
