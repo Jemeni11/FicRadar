@@ -137,7 +137,7 @@ async function getXenForoData(
           if (
             !anchor?.textContent ||
             !anchor.href ||
-            anchor.href.startsWith("/profile-posts/")
+            anchor.href.includes("/profile-posts/")
           )
             return
 
