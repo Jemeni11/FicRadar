@@ -45,6 +45,10 @@ async function getXenForoData(
       }
     }
 
+    const baseTag = document.createElement("base")
+    baseTag.href = baseURL
+    document.head.prepend(baseTag)
+
     return document
   }
 
@@ -62,10 +66,6 @@ async function getXenForoData(
     )
 
     const firstPageDoc = await getDocument(initialUrl)
-
-    const base = firstPageDoc.createElement("base")
-    base.href = baseURL
-    firstPageDoc.head.prepend(base)
 
     const nav = firstPageDoc.querySelector("nav.pageNavWrapper ul.pageNav-main")
     const sampleLink = nav?.querySelector(
@@ -205,10 +205,6 @@ async function getXenForoData(
     console.log("🔍 Scraping started for:", firstLink)
 
     const profileDoc = await getDocument(firstLink)
-
-    const base = profileDoc.createElement("base")
-    base.href = baseURL
-    profileDoc.head.prepend(base)
 
     const link = profileDoc.querySelector(
       'a.menu-linkRow[href^="/search/member?user_id="]',
