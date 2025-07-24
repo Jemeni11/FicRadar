@@ -84,7 +84,7 @@ This project is built with the [Plasmo](https://docs.plasmo.com/) framework.
 
 - [Chrome Web Store](https://chromewebstore.google.com/detail/ficradar/fghclogjcpjoiefcecibmedgocnogmbj)
 - [Mozilla Firefox Browser Add-ons](https://addons.mozilla.org/en-US/android/addon/ficradar/)
-  <!-- - [Microsoft Edge Add-ons]() -->
+- [Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/ficradar/kechmepbngbdnjgdoefjnbiainbikdpi)
   <!-- - [Opera Add-ons]() -->
 
 ### Using Pre-built Files
