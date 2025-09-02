@@ -15,11 +15,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Responsive sidebar for author scraping tab, including a mobile toggle, overlay, and close button.
+
+### Changed
+
+- Improved sidebar behavior on small screens: closes automatically after selecting an author, transitions smoothly in/out, and adjusts main content layout accordingly.
+- Updated `file-upload` tab layout to stack vertically on small screens and horizontally on larger screens.
+- `.gitignore` now excludes `diff.txt`.
+
 ## [1.0.0] - 2025-07-15
 
 Released FicRadar
 
-[unreleased]: https://github.com/Jemeni11/FicRadar/compare/v1.1.0...HEAD
+[unreleased]: https://github.com/Jemeni11/FicRadar/compare/v1.0.0...HEAD
 
 <!-- [1.1.0]: https://github.com/Jemeni11/FicRadar/releases/compare/v1.0.0...v1.1.0 -->
 
