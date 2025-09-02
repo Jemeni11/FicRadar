@@ -94,9 +94,9 @@ export default function FileUploadTab() {
   }
 
   return (
-    <div className="flex h-screen">
+    <div className="flex flex-col sm:flex-row sm:h-screen">
       {/* Sidebar */}
-      <aside className="w-64 bg-gray-50 border-r border-gray-200 flex flex-col">
+      <aside className="w-full sm:w-64 bg-gray-50 border-r border-gray-200 flex flex-col">
         <div className="sticky top-0 bg-gray-50 z-10 border-b pb-4">
           <div className="p-4 font-bold text-lg border-b">Upload</div>
 
