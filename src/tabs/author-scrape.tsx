@@ -76,6 +76,7 @@ export default function AuthorScrapeTab() {
     found: 0,
   })
   const [hasStartedScraping, setHasStartedScraping] = useState(false)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   const updateStatus = (
     index: number,
@@ -228,9 +229,50 @@ export default function AuthorScrapeTab() {
   ).length
 
   return (
-    <div className="flex h-screen">
-      <aside className="w-64 bg-gray-50 border-r border-gray-200 flex flex-col">
+    <div className="flex h-screen relative">
+      {/* Mobile toggle button */}
+      <button
+        className="fixed top-4 left-4 z-30 p-2 bg-gray-800 text-white rounded-md min-[450px]:hidden"
+        onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M4 6h16M4 12h16M4 18h16"
+          />
+        </svg>
+      </button>
+
+      {/* Mobile overlay */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-20 min-[450px]:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      <aside
+        className={`
+        ${isSidebarOpen ? "visible translate-x-0" : "invisible min-[450px]:visible -translate-x-full"} 
+        min-[450px]:translate-x-0  
+        bg-gray-50 border-r border-gray-200 flex flex-col
+        fixed min-[450px]:relative 
+        h-full z-30 
+        transition-transform duration-300 ease-in-out
+        ${isSidebarOpen ? "w-full min-[450px]:w-64" : "w-0 min-[450px]:w-64"}
+        `}>
         <div className="sticky top-0 bg-gray-50 z-10 space-y-4 border-b pb-4 w-full">
+          <button
+            className="bg-red-700 py-2 min-[450px]:hidden px-4 w-[90%] rounded-md mx-[5%] my-2 text-white font-bold text-xl"
+            type="button"
+            onClick={() => setIsSidebarOpen(false)}>
+            Close Sidebar
+          </button>
           <div className="p-4 font-bold text-lg border-b">Authors</div>
           <div className="my-8 px-4 text-sm text-gray-600">
             Progress: {completedCount}/{authors.length}
@@ -272,7 +314,12 @@ export default function AuthorScrapeTab() {
               className={`p-3 cursor-pointer flex items-center justify-between border-b text-sm hover:bg-gray-200 transition ${
                 idx === selectedAuthorIndex ? "bg-purple-100 font-semibold" : ""
               }`}
-              onClick={() => setSelectedAuthorIndex(idx)}>
+              onClick={() => {
+                setSelectedAuthorIndex(idx)
+                if (window.innerWidth < 450) {
+                  setIsSidebarOpen(false)
+                }
+              }}>
               <span>{author.name}</span>
               <span className="text-xs text-gray-500">
                 {author.status === "queued" && "🟡 Not started"}
@@ -286,7 +333,10 @@ export default function AuthorScrapeTab() {
         </ul>
       </aside>
 
-      <main className="flex-1 overflow-auto p-8">
+      <main
+        className={`flex-1 overflow-auto py-4 px-8 min-[450px]:py-8 min-[450px]:px-8 transition-all duration-300 ${
+          isSidebarOpen ? "min-[450px]:ml-0 ml-16" : "ml-16 min-[450px]:ml-0"
+        }`}>
         <div className="inline-block">
           <h1 className="text-2xl font-bold mb-4">
             <a
