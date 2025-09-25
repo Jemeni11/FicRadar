@@ -60,6 +60,11 @@
     "browser_specific_settings": {
       "gecko": {
         "id": "ficradar@Jemeni11.github.com",
+        "data_collection_permissions": {
+          "required": [
+            "none"
+          ]
+        },
         "strict_min_version": "79.0"
       },
       "gecko_android": {
