@@ -440,7 +440,7 @@ export default function AuthorScrapeTab() {
             <p className="text-gray-600 mb-2">
               {selectedAuthor.stories.length} stories found:
             </p>
-            <ol className="list-decimal list-inside space-y-1 text-sm">
+            <ol className="list-decimal list-inside space-y-4 text-base md:text-sm">
               {selectedAuthor.stories.map((story) => (
                 <li key={story.link} data-count={story.count}>
                   <a
