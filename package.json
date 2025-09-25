@@ -17,7 +17,11 @@
     "buildZip:firefox": "plasmo build --target=firefox-mv2 --zip",
     "package": "pnpm package:chrome && pnpm package:firefox",
     "package:chrome": "plasmo package --target=chrome-mv3",
-    "package:firefox": "plasmo package --target=firefox-mv2"
+    "package:firefox": "plasmo package --target=firefox-mv2",
+    "test:firefox-android-clean": "web-ext run --source-dir ./build/firefox-mv2-dev -t firefox-android --adb-remove-old-artifacts",
+    "test:firefox-android": "web-ext run --source-dir ./build/firefox-mv2-dev -t firefox-android",
+    "lint:firefox": "web-ext lint --source-dir ./build/",
+    "prettier": "prettier --write ."
   },
   "dependencies": {
     "@plasmohq/storage": "^1.15.0",
@@ -42,7 +46,8 @@
     "@types/react-dom": "18.2.18",
     "postcss": "8.4.33",
     "prettier": "3.2.4",
-    "typescript": "5.3.3"
+    "typescript": "5.3.3",
+    "web-ext": "^8.10.0"
   },
   "manifest": {
     "host_permissions": [
@@ -54,7 +59,11 @@
     ],
     "browser_specific_settings": {
       "gecko": {
-        "id": "ficradar@Jemeni11.github.com"
+        "id": "ficradar@Jemeni11.github.com",
+        "strict_min_version": "45.0"
+      },
+      "gecko_android": {
+        "strict_min_version": "54.0"
       }
     }
   },
@@ -66,7 +75,8 @@
       "esbuild",
       "lmdb",
       "msgpackr-extract",
-      "sharp"
+      "sharp",
+      "spawn-sync"
     ]
   }
 }
