@@ -189,7 +189,7 @@ export default function Popup() {
   }
 
   return (
-    <div className="w-96 min-h-[400px]">
+    <div className="w-full min-h-full [@media(pointer:fine)]:w-96 [@media(pointer:fine)]:min-h-[400px]">
       <div className="w-full aspect-video flex justify-center items-center bg-[linear-gradient(90deg,#141142,#4143c7)]">
         <Radar />
       </div>
@@ -273,148 +273,185 @@ export default function Popup() {
             </button>
           </form>
         ) : (
-          <form
-            ref={formRef}
-            onSubmit={handleFileFormatSubmit}
-            className="flex flex-col gap-4">
-            <div className="inline-block text-center whitespace-normal flex-wrap">
-              <span className="text-sm text-gray-300">Upload a&nbsp;</span>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <span className="text-sm cursor-help text-fr-1 underline-offset-2 underline inline-block">
-                    supported file (JSON/TXT)
+          <div className="flex flex-col gap-4">
+            <div className="[@media(pointer:coarse)]:hidden">
+              <form
+                ref={formRef}
+                onSubmit={handleFileFormatSubmit}
+                className="flex flex-col gap-4">
+                <div className="inline-block text-center whitespace-normal flex-wrap">
+                  <span className="text-sm text-gray-300">Upload a&nbsp;</span>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <span className="text-sm cursor-help text-fr-1 underline-offset-2 underline inline-block">
+                        supported file (JSON/TXT)
+                      </span>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-80 max-h-[320px] overflow-y-auto mx-8 bg-white text-sm space-y-4 rounded-sm shadow-md p-4 border border-gray-200">
+                      <h2 className="font-semibold text-xl text-gray-900">
+                        Supported File Formats
+                      </h2>
+
+                      <div className="space-y-1">
+                        <p>
+                          <span className="font-medium text-gray-800">
+                            JSON:
+                          </span>{" "}
+                          Should be a list of objects, each with an{" "}
+                          <code className="bg-gray-100 px-1 py-0.5 rounded text-[0.85em]">
+                            authorLink
+                          </code>
+                          .
+                        </p>
+                      </div>
+
+                      <div className="space-y-1">
+                        <p className="font-medium text-gray-800">TXT:</p>
+                        <ul className="list-disc list-inside ml-2 space-y-1 text-gray-700">
+                          <li>
+                            A plain author link, e.g.
+                            <br />
+                            <code className="bg-gray-100 px-1 py-0.5 rounded text-[0.85em] break-words">
+                              https://forums.spacebattles.com/members/example.12345/
+                            </code>
+                          </li>
+                          <li>
+                            Or a line like:
+                            <br />
+                            <code className="bg-gray-100 px-1 py-0.5 rounded text-[0.85em] break-words">
+                              Author Link:
+                              https://forums.sufficientvelocity.com/members/example.12345/
+                            </code>
+                          </li>
+                        </ul>
+                      </div>
+
+                      <p className="text-gray-700">
+                        If you're using{" "}
+                        <a
+                          href="https://github.com/Jemeni11/TalesTrove"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-fr-1 underline font-medium">
+                          TalesTrove
+                        </a>
+                        , you're all set. Its JSON and main TXT format are fully
+                        supported.
+                        <br />
+                        <br />
+                        LinksOnlyTXT is not supported. Those are story links not
+                        author links.
+                      </p>
+                    </PopoverContent>
+                  </Popover>
+                  <span className="text-sm text-gray-300">
+                    .&nbsp;Only author links from XenForo forums are supported.
                   </span>
-                </PopoverTrigger>
-                <PopoverContent className="w-80 max-h-[320px] overflow-y-auto mx-8 bg-white text-sm space-y-4 rounded-sm shadow-md p-4 border border-gray-200">
-                  <h2 className="font-semibold text-xl text-gray-900">
-                    Supported File Formats
-                  </h2>
+                </div>
+                <input
+                  id="file"
+                  name="file"
+                  type="file"
+                  accept="application/json,text/plain"
+                  disabled={isUploading}
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) {
+                      setSelectedFileName(file.name)
+                    }
+                  }}
+                />
 
-                  <div className="space-y-1">
-                    <p>
-                      <span className="font-medium text-gray-800">JSON:</span>{" "}
-                      Should be a list of objects, each with an{" "}
-                      <code className="bg-gray-100 px-1 py-0.5 rounded text-[0.85em]">
-                        authorLink
-                      </code>
-                      .
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <span className="text-base w-full text-center cursor-help text-yellow-600 font-medium">
+                      ⚠️ Caution
+                    </span>
+                  </PopoverTrigger>
+
+                  <PopoverContent className="w-80 mx-8 bg-white text-sm space-y-4 rounded-sm shadow-md p-4 border border-yellow-300">
+                    <h2 className="text-base font-semibold text-yellow-800">
+                      File upload may fail in some browsers
+                    </h2>
+
+                    <p className="text-gray-700">
+                      In some browsers, file inputs inside extension popups
+                      often get cleared as soon as the popup loses focus — like
+                      right after selecting a file.
                     </p>
-                  </div>
 
-                  <div className="space-y-1">
-                    <p className="font-medium text-gray-800">TXT:</p>
-                    <ul className="list-disc list-inside ml-2 space-y-1 text-gray-700">
-                      <li>
-                        A plain author link, e.g.
-                        <br />
-                        <code className="bg-gray-100 px-1 py-0.5 rounded text-[0.85em] break-words">
-                          https://forums.spacebattles.com/members/example.12345/
-                        </code>
-                      </li>
-                      <li>
-                        Or a line like:
-                        <br />
-                        <code className="bg-gray-100 px-1 py-0.5 rounded text-[0.85em] break-words">
-                          Author Link:
-                          https://forums.sufficientvelocity.com/members/example.12345/
-                        </code>
-                      </li>
-                    </ul>
-                  </div>
+                    <p className="text-gray-700">
+                      If your upload keeps disappearing, try using Chrome/Edge,
+                      or open the full upload page instead.
+                    </p>
 
-                  <p className="text-gray-700">
-                    If you're using{" "}
-                    <a
-                      href="https://github.com/Jemeni11/TalesTrove"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-fr-1 underline font-medium">
-                      TalesTrove
-                    </a>
-                    , you're all set. Its JSON and main TXT format are fully
-                    supported.
-                    <br />
-                    <br />
-                    LinksOnlyTXT is not supported. Those are story links not
-                    author links.
-                  </p>
-                </PopoverContent>
-              </Popover>
-              <span className="text-sm text-gray-300">
-                .&nbsp;Only author links from XenForo forums are supported.
-              </span>
-            </div>
-            <input
-              id="file"
-              name="file"
-              type="file"
-              accept="application/json,text/plain"
-              disabled={isUploading}
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0]
-                if (file) {
-                  setSelectedFileName(file.name)
-                }
-              }}
-            />
+                    <button
+                      className="w-full inline-flex justify-center items-center gap-2 rounded-3xl text-base bg-fr-1 text-white text-center py-1.5 hover:bg-fr-2 transition-colors"
+                      onClick={() => {
+                        chrome.tabs.create({
+                          url: chrome.runtime.getURL("tabs/file-upload.html"),
+                        })
+                      }}>
+                      <span>Open Upload Page</span>
+                      <LinkOutIcon className="size-4" />
+                    </button>
 
-            <Popover>
-              <PopoverTrigger asChild>
-                <span className="text-base w-full text-center cursor-help text-yellow-600 font-medium">
-                  ⚠️ Caution
-                </span>
-              </PopoverTrigger>
+                    <small className="text-xs text-center w-full text-gray-500 mt-1 block [@media(pointer:coarse)]:block [@media(pointer:fine)]:hidden">
+                      Tab will open in background - close popup to view
+                    </small>
+                  </PopoverContent>
+                </Popover>
 
-              <PopoverContent className="w-80 mx-8 bg-white text-sm space-y-4 rounded-sm shadow-md p-4 border border-yellow-300">
-                <h2 className="text-base font-semibold text-yellow-800">
-                  File upload may fail in some browsers
-                </h2>
-
-                <p className="text-gray-700">
-                  In some browsers, file inputs inside extension popups often
-                  get cleared as soon as the popup loses focus — like right
-                  after selecting a file.
-                </p>
-
-                <p className="text-gray-700">
-                  If your upload keeps disappearing, try using Chrome/Edge, or
-                  open the full upload page instead.
-                </p>
+                <label
+                  htmlFor="file"
+                  className={cn(
+                    "w-full rounded-3xl text-lg text-center py-1.5 border-2 cursor-pointer transition-colors",
+                    isUploading
+                      ? "border-gray-500 text-gray-500 cursor-not-allowed"
+                      : "border-fr-1 text-fr-1 hover:bg-fr-1 hover:text-white",
+                  )}>
+                  {selectedFileName || "Choose File"}
+                </label>
 
                 <button
-                  className="w-full inline-flex justify-center items-center gap-2 rounded-3xl text-base bg-fr-1 text-white text-center py-1.5 hover:bg-fr-2 transition-colors"
-                  onClick={() => {
-                    chrome.tabs.create({
-                      url: chrome.runtime.getURL("tabs/file-upload.html"),
-                    })
-                  }}>
-                  <span>Open Upload Page</span>
+                  type="submit"
+                  disabled={isUploading || !selectedFileName?.trim()}
+                  className="w-full inline-flex justify-center items-center gap-2 rounded-3xl text-lg bg-fr-1 text-center py-1.5 disabled:opacity-50">
+                  <span>{isUploading ? "Processing..." : "Upload & Scan"}</span>
                   <LinkOutIcon className="size-4" />
                 </button>
-              </PopoverContent>
-            </Popover>
+              </form>
+            </div>
 
-            <label
-              htmlFor="file"
-              className={cn(
-                "w-full rounded-3xl text-lg text-center py-1.5 border-2 cursor-pointer transition-colors",
-                isUploading
-                  ? "border-gray-500 text-gray-500 cursor-not-allowed"
-                  : "border-fr-1 text-fr-1 hover:bg-fr-1 hover:text-white",
-              )}>
-              {selectedFileName || "Choose File"}
-            </label>
+            <div className="[@media(pointer:fine)]:hidden space-y-4">
+              <div className="text-center space-y-2">
+                <p className="text-yellow-600 font-medium">
+                  ⚠️ File uploads don't work reliably in mobile popups
+                </p>
+                <p className="text-sm text-gray-300">
+                  Files get cleared when the popup loses focus. Use the full
+                  upload page instead.
+                </p>
+              </div>
 
-            <button
-              type="submit"
-              disabled={isUploading || !selectedFileName?.trim()}
-              className="w-full inline-flex justify-center items-center gap-2 rounded-3xl text-lg bg-fr-1 text-center py-1.5 disabled:opacity-50">
-              <span>{isUploading ? "Processing..." : "Upload & Scan"}</span>
-              <LinkOutIcon className="size-4" />
-            </button>
-          </form>
+              <button
+                className="w-full inline-flex justify-center items-center gap-2 rounded-3xl text-lg bg-fr-1 text-white text-center py-1.5 hover:bg-fr-2 transition-colors"
+                onClick={() => {
+                  chrome.tabs.create({
+                    url: chrome.runtime.getURL("tabs/file-upload.html"),
+                  })
+                }}>
+                <span>Open Upload Page</span>
+                <LinkOutIcon className="size-4" />
+              </button>
+            </div>
+          </div>
         )}
+
+        <small className="text-xs text-center w-full text-white block [@media(pointer:coarse)]:block [@media(pointer:fine)]:hidden">
+          Tab will open in background - close popup to view
+        </small>
       </div>
 
       <footer className="text-sm bg-fr-3 text-white text-center py-4 space-y-3">
@@ -433,7 +470,7 @@ export default function Popup() {
           <span>Support me on: </span>
           <p className="flex justify-center gap-2">
             <a
-              href="https://www.buymeacoffee.com/jemeni"
+              href="https://www.buymeacoffee.com/jemeni11"
               target="_blank"
               rel="noopener noreferrer">
               <BuyMeACoffeeIcon />
