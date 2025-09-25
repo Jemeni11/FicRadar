@@ -25,9 +25,11 @@
 - [Features](#features)
 - [Installation](#installation)
   - [Browser Extension Stores](#browser-extension-stores)
+  - [Firefox Compatibility Notes](#firefox-compatibility-notes)
   - [Using Pre-built Files](#using-pre-built-files)
   - [Building From Source](#building-from-source)
     - [Development Build](#development-build)
+      - [Firefox for Android Development](#firefox-for-android-development)
     - [Production Build](#production-build)
 - [Usage](#usage)
   - [Supported Files](#supported-files)
@@ -87,6 +89,25 @@ This project is built with the [Plasmo](https://docs.plasmo.com/) framework.
 - [Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/ficradar/kechmepbngbdnjgdoefjnbiainbikdpi)
   <!-- - [Opera Add-ons]() -->
 
+### Firefox Compatibility Notes
+
+Minimum supported versions:
+
+- Firefox Desktop: 45 (March 2016)
+- Firefox for Android: 54 (June 2017)
+
+The extension uses these Firefox APIs:
+
+| API              | Firefox Desktop | Firefox Android |
+| ---------------- | --------------- | --------------- |
+| `runtime.getURL` | 45 (2016-03-08) | 48 (2016-08-02) |
+| `tabs.create`    | 45 (2016-03-08) | 54 (2017-06-13) |
+| `tabs.update`    | 45 (2016-03-08) | 54 (2017-06-13) |
+
+_The APIs determine the minimum Android version._
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ### Using Pre-built Files
 
 1. Enable Developer Mode in Chrome or Firefox.
@@ -114,6 +135,10 @@ pnpm install
 ```bash
 pnpm dev
 ```
+
+##### Firefox for Android Development
+
+This is slightly more complicated so I'll just link to the [official guide](https://extensionworkshop.com/documentation/develop/developing-extensions-for-firefox-for-android/).
 
 #### Production Build
 
