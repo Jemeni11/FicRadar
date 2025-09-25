@@ -93,6 +93,9 @@ This project is built with the [Plasmo](https://docs.plasmo.com/) framework.
 
 Minimum supported versions:
 
+> [!NOTE]  
+> The actual minimum Firefox version is 58. This is from the test run on addons.mozilla.org. The APIs used are supported from 54, but the manifest/package.json has keys that require 58+.
+
 - Firefox Desktop: 45 (March 2016)
 - Firefox for Android: 54 (June 2017)
 

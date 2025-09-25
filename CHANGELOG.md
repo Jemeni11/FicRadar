@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Corrected minimum Firefox version to 58 (from 45 desktop / 54 Android) in both documentation and manifest.
+
 ## [1.1.0] - 2025-09-25
 
 ### Added
