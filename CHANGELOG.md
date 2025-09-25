@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Corrected minimum Firefox version to 58 (from 45 desktop / 54 Android) in both documentation and manifest.
+- Corrected minimum Firefox version to 79 (from 45 desktop / 54 Android) in both documentation and manifest.
 
 ## [1.1.0] - 2025-09-25
 
@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Upload UX for mobile: full-page upload fallback and in-popup guidance (warnings and "Open Upload Page" CTA).
 - Popovers with detailed supported file format instructions and browser-specific upload caveats.
 - Documentation updates: Firefox compatibility notes (API/version support) and link to official guide for Firefox for Android development.
+- Explicit `data_collection_permissions` declaration in Firefox manifest (set to `"none"`).
 
 ### Changed
 
