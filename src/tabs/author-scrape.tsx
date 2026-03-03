@@ -9,6 +9,7 @@ import {
 } from "@/icons"
 import type {
   AuthorStatus,
+  LogEntry,
   ProgressData,
   StoryResult,
   SupportedSites,
@@ -24,7 +25,7 @@ import {
   saveTXTFile,
   sortByCountDescending,
 } from "@/utils"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 import { Storage } from "@plasmohq/storage"
 
@@ -41,10 +42,8 @@ const storage = new Storage({ area: "local" })
 const scrapeAuthor = async (
   id: SupportedSites,
   url: string,
-  setProgressData: React.Dispatch<React.SetStateAction<ProgressData>>,
+  progressCallback: (progress: ProgressData) => void,
 ): Promise<StoryResult[]> => {
-  const progressCallback = (progress: ProgressData) => setProgressData(progress)
-
   try {
     let data: StoryResult[] = []
 
@@ -78,6 +77,13 @@ export default function AuthorScrapeTab() {
   const [hasStartedScraping, setHasStartedScraping] = useState(false)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [viewMode, setViewMode] = useState<"list" | "grid">("list")
+  const [logs, setLogs] = useState<LogEntry[]>([])
+
+  const logsEndRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    logsEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [logs])
 
   const updateStatus = (
     index: number,
@@ -119,8 +125,20 @@ export default function AuthorScrapeTab() {
 
         // Reset progress for this author
         setProgressData({ page: 0, totalPages: 0, found: 0 })
+        setLogs([])
 
-        const data = await scrapeAuthor(id, author.url, setProgressData)
+        const data = await scrapeAuthor(id, author.url, (progress) => {
+          if (progress.page !== -1) {
+            setProgressData({
+              page: progress.page,
+              totalPages: progress.totalPages,
+              found: progress.found,
+            })
+          }
+          if (progress.logEntry) {
+            setLogs((prev) => [...prev, progress.logEntry!])
+          }
+        })
 
         if (data) {
           updateStatus(i, "success", sortByCountDescending(data))
@@ -338,8 +356,8 @@ export default function AuthorScrapeTab() {
         className={`flex-1 overflow-auto py-4 px-8 min-[450px]:py-8 min-[450px]:px-8 transition-all duration-300 ${
           isSidebarOpen ? "min-[450px]:ml-0 ml-16" : "ml-16 min-[450px]:ml-0"
         }`}>
-        <div className="inline-block">
-          <h1 className="text-2xl font-bold mb-4">
+        <div className="block max-w-full">
+          <h1 className="text-2xl font-bold mb-4 break-all">
             <a
               href={selectedAuthor?.url}
               target="_blank"
@@ -412,20 +430,62 @@ export default function AuthorScrapeTab() {
 
         {selectedAuthor?.status === "pending" && (
           <>
-            <div className="text-gray-500 animate-pulse">
+            <div className="text-gray-500 animate-pulse mb-4">
               Scraping in progress…
             </div>
-            <div className="my-8 text-sm text-gray-600">
+
+            <div className="mb-4 text-sm text-gray-600">
               Page Progress: {progressData.page}/{progressData.totalPages}
-              <div className="w-full h-2 bg-gray-200 rounded my-2">
+              <div className="w-full h-2 bg-gray-200 rounded my-2 border border-gray-300">
                 <div
                   className="h-full bg-purple-500 rounded transition-all duration-300"
                   style={{
-                    width: `${(progressData.page / progressData.totalPages) * 100}%`,
+                    width: `${(progressData.page / Math.max(progressData.totalPages, 1)) * 100}%`,
                   }}
                 />
               </div>
               <small>Found {progressData.found} unique thread(s)</small>
+            </div>
+
+            <div className="my-6 bg-[#0d1117] text-gray-300 font-mono text-xs rounded-md shadow-inner border border-gray-800 overflow-hidden flex flex-col h-64">
+              <div className="bg-gray-800 border-b border-gray-700 text-gray-400 px-3 py-1.5 text-[10px] uppercase font-bold flex items-center select-none">
+                <span>logs — {selectedAuthor.name}</span>
+              </div>
+              <div className="flex-1 overflow-y-auto p-3 flex flex-col font-mono leading-relaxed [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-gray-700 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-[#0d1117]">
+                {logs.length === 0 && (
+                  <div className="text-gray-600 italic">Waiting for logs…</div>
+                )}
+                {logs.map((log, i) => (
+                  <div
+                    key={i}
+                    className="flex flex-col lg:flex-row lg:items-start lg:gap-3 mb-2 lg:mb-1 hover:bg-[#161b22] px-1 -mx-1 rounded">
+                    <div className="flex gap-3 shrink-0 select-none">
+                      <span className="text-gray-500">
+                        {new Date(log.timestamp)
+                          .toISOString()
+                          .split("T")[1]
+                          .replace("Z", "")}
+                      </span>
+                      <span
+                        className={`font-bold uppercase w-12 ${
+                          log.level === "error"
+                            ? "text-red-400"
+                            : log.level === "warn"
+                              ? "text-yellow-400"
+                              : log.level === "info"
+                                ? "text-blue-400"
+                                : "text-green-400"
+                        }`}>
+                        {log.level}
+                      </span>
+                    </div>
+                    <span className="text-gray-300 break-words whitespace-pre-wrap mt-1 lg:mt-0 flex-1">
+                      {log.message}
+                    </span>
+                  </div>
+                ))}
+                <div ref={logsEndRef} />
+              </div>
             </div>
           </>
         )}

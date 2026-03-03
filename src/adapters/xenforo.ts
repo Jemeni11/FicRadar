@@ -61,8 +61,35 @@ async function getXenForoData(
     segmentIndex: number = 0,
     pageOffset: number = 0,
   ): Promise<number> {
-    console.log(
-      `[${adapterName}] Starting segment ${segmentIndex + 1}...\nURL: ${initialUrl}`,
+    const sendLog = (
+      level: "debug" | "info" | "warn" | "error",
+      message: string,
+    ) => {
+      // Still log to actual console for dev debugging
+      if (level === "debug" || level === "info")
+        console.log(`[${adapterName}] ${message}`)
+      else if (level === "warn") console.warn(`[${adapterName}] ${message}`)
+      else console.error(`[${adapterName}] ${message}`)
+
+      // Since sendLog only knows static data most of the time, we emit a zero payload
+      // and intercept it in react so IT DOES NOT OVERRIDE the real page progress numbers.
+      progressCallback({
+        page: -1,
+        totalPages: -1,
+        found: -1,
+        logEntry: {
+          timestamp: new Date().toISOString(),
+          level,
+          message,
+        },
+      })
+    }
+
+    sendLog(
+      "debug",
+      segmentIndex === 0
+        ? `Initiating search for user content…\nURL: ${initialUrl}`
+        : `Fetching next block of older results…\nURL: ${initialUrl}`,
     )
 
     const firstPageDoc = await getDocument(initialUrl)
@@ -105,8 +132,9 @@ async function getXenForoData(
             /has not posted any content recently\.$/i.test(msg),
           )
         ) {
-          console.info(
-            `[${adapterName}] This user hasn't posted any content recently. Skipping...`,
+          sendLog(
+            "info",
+            "This user hasn't posted any content recently. No stories to extract.",
           )
           return
         }
@@ -119,8 +147,9 @@ async function getXenForoData(
           trimmedMessages[0] === "No results found." &&
           !ol
         ) {
-          console.info(
-            `[${adapterName}] No results on this page — likely end of results.`,
+          sendLog(
+            "info",
+            "No results found on this page. Reached the end of the user's content.",
           )
           return
         }
@@ -154,6 +183,10 @@ async function getXenForoData(
           totalPages: pageOffset + totalPages,
           found: data.length,
         })
+        sendLog(
+          "info",
+          `Successfully parsed page ${pageNo} of ${totalPages}. Total unique threads discovered: ${data.length}.`,
+        )
 
         // Only delay if there are more pages ahead
         if (pageNo < totalPages) {
@@ -170,6 +203,10 @@ async function getXenForoData(
             const nextOffset = pageOffset + totalPages
 
             if (segmentIndex > 10) {
+              sendLog(
+                "error",
+                "Exceeded maximum 'older results' segments. Aborting to prevent infinite loop.",
+              )
               customError(
                 adapterName,
                 "Too many 'older results' segments. Aborting to prevent infinite loop.",
@@ -190,8 +227,10 @@ async function getXenForoData(
           }
         }
       } catch (error) {
-        console.warn(`[${adapterName}] Skipping page ${pageNo} due to error`)
-        console.error(error)
+        sendLog(
+          "warn",
+          `Error encountered while parsing page ${pageNo}. Skipping this page. Details: ${error}`,
+        )
         continue
       }
     }

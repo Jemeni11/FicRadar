@@ -3,10 +3,19 @@ export type SupportedSites =
   | "SpaceBattles"
   | "SufficientVelocity"
 
+export type LogLevel = "debug" | "info" | "warn" | "error"
+
+export type LogEntry = {
+  timestamp: string
+  level: LogLevel
+  message: string
+}
+
 export type ProgressData = {
   page: number
   totalPages: number
   found: number
+  logEntry?: LogEntry
 }
 
 export type TalesTroveJSONType = {
