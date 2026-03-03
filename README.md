@@ -125,6 +125,8 @@ _The APIs determine the minimum Android version._
 
 ### Building From Source
 
+> [!NOTE]
+> 
 > You need [Node.js](https://nodejs.org/) and [pnpm](https://pnpm.io/) installed.
 
 ```bash
@@ -156,6 +158,8 @@ Then load the resulting build folder as an unpacked extension.
 
 ## Usage
 
+> [!NOTE]
+> 
 > You must be logged in to the forum for data to be extracted.
 
 1. Navigate to a supported user profile page and copy the URL.
