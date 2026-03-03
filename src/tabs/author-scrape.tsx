@@ -2,6 +2,7 @@ import ExportButton from "@/components/ExportButton"
 import { SUPPORTED_SITES } from "@/constants"
 import {
   BookmarksHTMLIcon,
+  BuyMeACoffeeIcon,
   CSVIcon,
   HTMLIcon,
   JSONIcon,
@@ -181,7 +182,7 @@ export default function AuthorScrapeTab() {
     if (selectedAuthor?.stories) {
       saveBookmarkHTMLFile(
         selectedAuthor,
-        `${selectedAuthor.name}_stories.html`,
+        `${selectedAuthor.name}_stories_bookmark.html`,
       )
     }
   }
@@ -353,242 +354,267 @@ export default function AuthorScrapeTab() {
       </aside>
 
       <main
-        className={`flex-1 overflow-auto py-4 px-8 min-[450px]:py-8 min-[450px]:px-8 transition-all duration-300 ${
+        className={`flex-1 flex flex-col h-screen overflow-hidden transition-all duration-300 ${
           isSidebarOpen ? "min-[450px]:ml-0 ml-16" : "ml-16 min-[450px]:ml-0"
         }`}>
-        <div className="block max-w-full">
-          <h1 className="text-2xl font-bold mb-4 break-all">
-            <a
-              href={selectedAuthor?.url}
-              target="_blank"
-              className="hover:underline hover:text-fr-1 hover:underline-offset-4">
-              {selectedAuthor?.name}
-            </a>
-          </h1>
-          {selectedAuthor?.status === "success" && (
-            <div className="mb-4">
-              <h2 className="text-sm text-gray-500 font-medium mb-2">
-                Export stories as:
-              </h2>
-              <div className="hidden md:flex flex-wrap gap-2 mb-4">
-                <ExportButton
-                  label="TXT"
-                  icon={<TXTIcon className="w-4 h-4" />}
-                  onClick={handleDownloadTXT}
-                />
-                <ExportButton
-                  label="JSON"
-                  icon={<JSONIcon className="w-4 h-4" />}
-                  onClick={handleDownloadJSON}
-                />
-                <ExportButton
-                  label="CSV"
-                  icon={<CSVIcon className="w-4 h-4" />}
-                  onClick={handleDownloadCSV}
-                />
-                <ExportButton
-                  label="HTML"
-                  icon={<HTMLIcon className="w-4 h-4" />}
-                  onClick={handleDownloadHTML}
-                />
-                <ExportButton
-                  label="Bookmark HTML"
-                  icon={<BookmarksHTMLIcon className="w-4 h-4" />}
-                  onClick={handleDownloadBookmarkHTML}
-                />
-              </div>
+        <div className="flex-1 overflow-y-auto py-4 px-8 min-[450px]:py-8 min-[450px]:px-8">
+          <div className="block max-w-full">
+            <h1 className="text-2xl font-bold mb-4 break-all">
+              <a
+                href={selectedAuthor?.url}
+                target="_blank"
+                className="hover:underline hover:text-fr-1 hover:underline-offset-4">
+                {selectedAuthor?.name}
+              </a>
+            </h1>
+            {selectedAuthor?.status === "success" && (
+              <div className="mb-4">
+                <h2 className="text-sm text-gray-500 font-medium mb-2">
+                  Export stories as:
+                </h2>
+                <div className="hidden md:flex flex-wrap gap-2 mb-4">
+                  <ExportButton
+                    label="TXT"
+                    icon={<TXTIcon className="w-4 h-4" />}
+                    onClick={handleDownloadTXT}
+                  />
+                  <ExportButton
+                    label="JSON"
+                    icon={<JSONIcon className="w-4 h-4" />}
+                    onClick={handleDownloadJSON}
+                  />
+                  <ExportButton
+                    label="CSV"
+                    icon={<CSVIcon className="w-4 h-4" />}
+                    onClick={handleDownloadCSV}
+                  />
+                  <ExportButton
+                    label="HTML"
+                    icon={<HTMLIcon className="w-4 h-4" />}
+                    onClick={handleDownloadHTML}
+                  />
+                  <ExportButton
+                    label="Bookmark HTML"
+                    icon={<BookmarksHTMLIcon className="w-4 h-4" />}
+                    onClick={handleDownloadBookmarkHTML}
+                  />
+                </div>
 
-              <div className="md:hidden mb-4">
-                <label className="text-sm text-gray-600 block mb-1">
-                  Export Format
-                </label>
-                <select
-                  className="w-full px-3 py-2 border rounded text-sm bg-white"
-                  onChange={(e) => {
-                    const format = e.target.value
-                    if (format === "txt") handleDownloadTXT()
-                    if (format === "json") handleDownloadJSON()
-                    if (format === "csv") handleDownloadCSV()
-                    if (format === "html") handleDownloadHTML()
-                    if (format === "bookmark") handleDownloadBookmarkHTML()
-                  }}>
-                  <option value="">Select format</option>
-                  <option value="txt">Download TXT</option>
-                  <option value="json">Download JSON</option>
-                  <option value="csv">Download CSV</option>
-                  <option value="html">Download HTML</option>
-                  <option value="bookmark">Download Bookmark HTML</option>
-                </select>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {selectedAuthor?.status === "queued" && (
-          <div className="text-gray-400 italic">Awaiting scraping…</div>
-        )}
-
-        {selectedAuthor?.status === "pending" && (
-          <>
-            <div className="text-gray-500 animate-pulse mb-4">
-              Scraping in progress…
-            </div>
-
-            <div className="mb-4 text-sm text-gray-600">
-              Page Progress: {progressData.page}/{progressData.totalPages}
-              <div className="w-full h-2 bg-gray-200 rounded my-2 border border-gray-300">
-                <div
-                  className="h-full bg-purple-500 rounded transition-all duration-300"
-                  style={{
-                    width: `${(progressData.page / Math.max(progressData.totalPages, 1)) * 100}%`,
-                  }}
-                />
-              </div>
-              <small>Found {progressData.found} unique thread(s)</small>
-            </div>
-
-            <div className="my-6 bg-[#0d1117] text-gray-300 font-mono text-xs rounded-md shadow-inner border border-gray-800 overflow-hidden flex flex-col h-64">
-              <div className="bg-gray-800 border-b border-gray-700 text-gray-400 px-3 py-1.5 text-[10px] uppercase font-bold flex items-center select-none">
-                <span>logs — {selectedAuthor.name}</span>
-              </div>
-              <div className="flex-1 overflow-y-auto p-3 flex flex-col font-mono leading-relaxed [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-gray-700 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-[#0d1117]">
-                {logs.length === 0 && (
-                  <div className="text-gray-600 italic">Waiting for logs…</div>
-                )}
-                {logs.map((log, i) => (
-                  <div
-                    key={i}
-                    className="flex flex-col lg:flex-row lg:items-start lg:gap-3 mb-2 lg:mb-1 hover:bg-[#161b22] px-1 -mx-1 rounded">
-                    <div className="flex gap-3 shrink-0 select-none">
-                      <span className="text-gray-500">
-                        {new Date(log.timestamp)
-                          .toISOString()
-                          .split("T")[1]
-                          .replace("Z", "")}
-                      </span>
-                      <span
-                        className={`font-bold uppercase w-12 ${
-                          log.level === "error"
-                            ? "text-red-400"
-                            : log.level === "warn"
-                              ? "text-yellow-400"
-                              : log.level === "info"
-                                ? "text-blue-400"
-                                : "text-green-400"
-                        }`}>
-                        {log.level}
-                      </span>
-                    </div>
-                    <span className="text-gray-300 break-words whitespace-pre-wrap mt-1 lg:mt-0 flex-1">
-                      {log.message}
-                    </span>
-                  </div>
-                ))}
-                <div ref={logsEndRef} />
-              </div>
-            </div>
-          </>
-        )}
-
-        {selectedAuthor?.status === "error" && (
-          <div className="text-red-600 font-semibold">
-            ❌ Failed to scrape this author. Check the console for more info.
-          </div>
-        )}
-
-        {selectedAuthor?.status === "success" && (
-          <>
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-gray-600">
-                {selectedAuthor.stories.length} stories found:
-              </p>
-
-              <div className="flex bg-gray-200 rounded-md p-0.5">
-                <button
-                  type="button"
-                  aria-label="List View"
-                  onClick={() => setViewMode("list")}
-                  className={`p-1.5 rounded-sm transition-colors focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-purple-500 ${
-                    viewMode === "list"
-                      ? "bg-white shadow-sm text-purple-700 font-medium"
-                      : "text-gray-500 hover:text-gray-800 hover:bg-gray-300"
-                  }`}>
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 6h16M4 12h16M4 18h16"
-                    />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  aria-label="Grid View"
-                  onClick={() => setViewMode("grid")}
-                  className={`p-1.5 rounded-sm transition-colors focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-purple-500 ${
-                    viewMode === "grid"
-                      ? "bg-white shadow-sm text-purple-700 font-medium"
-                      : "text-gray-500 hover:text-gray-800 hover:bg-gray-300"
-                  }`}>
-                  <svg
-                    className="w-4 h-4"
-                    fill="currentColor"
-                    viewBox="0 0 24 24">
-                    <path d="M4 6h4v4H4V6zm12 0h4v4h-4V6zM4 14h4v4H4v-4zm12 0h4v4h-4v-4z" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-            {viewMode === "list" ? (
-              <div
-                className="flex flex-col gap-1 text-base md:text-sm"
-                style={{ contentVisibility: "auto" }}>
-                {selectedAuthor.stories.map((story, idx) => (
-                  <a
-                    key={story.link}
-                    href={story.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-between p-2 hover:bg-gray-100 rounded-md group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 transition-colors">
-                    <span className="text-gray-400 font-medium w-6 lg:w-8 shrink-0 text-right mr-3 tabular-nums">
-                      {idx + 1}.
-                    </span>
-                    <span className="text-blue-700 group-hover:underline truncate flex-1 min-w-0 mr-4">
-                      {story.title}
-                    </span>
-                    <span className="bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full text-xs font-medium tabular-nums shrink-0">
-                      {story.count}
-                    </span>
-                  </a>
-                ))}
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 text-base md:text-sm">
-                {selectedAuthor.stories.map((story) => (
-                  <a
-                    key={story.link}
-                    href={story.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex flex-col justify-between p-4 border border-gray-200 rounded-lg bg-white hover:border-gray-300 hover:shadow-sm hover:-translate-y-0.5 transition-all group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500">
-                    <span className="text-blue-700 font-medium group-hover:underline line-clamp-2 mb-3 text-balance">
-                      {story.title}
-                    </span>
-                    <span className="self-end bg-gray-100 text-gray-700 border border-gray-200 px-2.5 py-1 rounded-full text-xs font-semibold tabular-nums">
-                      {story.count}
-                    </span>
-                  </a>
-                ))}
+                <div className="md:hidden mb-4">
+                  <label className="text-sm text-gray-600 block mb-1">
+                    Export Format
+                  </label>
+                  <select
+                    className="w-full px-3 py-2 border rounded text-sm bg-white"
+                    onChange={(e) => {
+                      const format = e.target.value
+                      if (format === "txt") handleDownloadTXT()
+                      if (format === "json") handleDownloadJSON()
+                      if (format === "csv") handleDownloadCSV()
+                      if (format === "html") handleDownloadHTML()
+                      if (format === "bookmark") handleDownloadBookmarkHTML()
+                    }}>
+                    <option value="">Select format</option>
+                    <option value="txt">Download TXT</option>
+                    <option value="json">Download JSON</option>
+                    <option value="csv">Download CSV</option>
+                    <option value="html">Download HTML</option>
+                    <option value="bookmark">Download Bookmark HTML</option>
+                  </select>
+                </div>
               </div>
             )}
-          </>
-        )}
+          </div>
+
+          {selectedAuthor?.status === "queued" && (
+            <div className="text-gray-400 italic">Awaiting scraping…</div>
+          )}
+
+          {selectedAuthor?.status === "pending" && (
+            <>
+              <div className="text-gray-500 animate-pulse mb-4">
+                Scraping in progress…
+              </div>
+
+              <div className="mb-4 text-sm text-gray-600">
+                Page Progress: {progressData.page}/{progressData.totalPages}
+                <div className="w-full h-2 bg-gray-200 rounded my-2 border border-gray-300">
+                  <div
+                    className="h-full bg-purple-500 rounded transition-all duration-300"
+                    style={{
+                      width: `${(progressData.page / Math.max(progressData.totalPages, 1)) * 100}%`,
+                    }}
+                  />
+                </div>
+                <small>Found {progressData.found} unique thread(s)</small>
+              </div>
+
+              <div className="my-6 bg-[#0d1117] text-gray-300 font-mono text-xs rounded-md shadow-inner border border-gray-800 overflow-hidden flex flex-col h-64">
+                <div className="bg-gray-800 border-b border-gray-700 text-gray-400 px-3 py-1.5 text-[10px] uppercase font-bold flex items-center select-none">
+                  <span>logs — {selectedAuthor.name}</span>
+                </div>
+                <div className="flex-1 overflow-y-auto p-3 flex flex-col font-mono leading-relaxed [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-gray-700 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-[#0d1117]">
+                  {logs.length === 0 && (
+                    <div className="text-gray-600 italic">
+                      Waiting for logs…
+                    </div>
+                  )}
+                  {logs.map((log, i) => (
+                    <div
+                      key={i}
+                      className="flex flex-col lg:flex-row lg:items-start lg:gap-3 mb-2 lg:mb-1 hover:bg-[#161b22] px-1 -mx-1 rounded">
+                      <div className="flex gap-3 shrink-0 select-none">
+                        <span className="text-gray-500">
+                          {new Date(log.timestamp)
+                            .toISOString()
+                            .split("T")[1]
+                            .replace("Z", "")}
+                        </span>
+                        <span
+                          className={`font-bold uppercase w-12 ${
+                            log.level === "error"
+                              ? "text-red-400"
+                              : log.level === "warn"
+                                ? "text-yellow-400"
+                                : log.level === "info"
+                                  ? "text-blue-400"
+                                  : "text-green-400"
+                          }`}>
+                          {log.level}
+                        </span>
+                      </div>
+                      <span className="text-gray-300 break-words whitespace-pre-wrap mt-1 lg:mt-0 flex-1">
+                        {log.message}
+                      </span>
+                    </div>
+                  ))}
+                  <div ref={logsEndRef} />
+                </div>
+              </div>
+            </>
+          )}
+
+          {selectedAuthor?.status === "error" && (
+            <div className="text-red-600 font-semibold">
+              ❌ Failed to scrape this author. Check the console for more info.
+            </div>
+          )}
+
+          {selectedAuthor?.status === "success" && (
+            <>
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-gray-600">
+                  {selectedAuthor.stories.length} stories found:
+                </p>
+
+                <div className="flex bg-gray-200 rounded-md p-0.5">
+                  <button
+                    type="button"
+                    aria-label="List View"
+                    onClick={() => setViewMode("list")}
+                    className={`p-1.5 rounded-sm transition-colors focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-purple-500 ${
+                      viewMode === "list"
+                        ? "bg-white shadow-sm text-purple-700 font-medium"
+                        : "text-gray-500 hover:text-gray-800 hover:bg-gray-300"
+                    }`}>
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 6h16M4 12h16M4 18h16"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Grid View"
+                    onClick={() => setViewMode("grid")}
+                    className={`p-1.5 rounded-sm transition-colors focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-purple-500 ${
+                      viewMode === "grid"
+                        ? "bg-white shadow-sm text-purple-700 font-medium"
+                        : "text-gray-500 hover:text-gray-800 hover:bg-gray-300"
+                    }`}>
+                    <svg
+                      className="w-4 h-4"
+                      fill="currentColor"
+                      viewBox="0 0 24 24">
+                      <path d="M4 6h4v4H4V6zm12 0h4v4h-4V6zM4 14h4v4H4v-4zm12 0h4v4h-4v-4z" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              {viewMode === "list" ? (
+                <div
+                  className="flex flex-col gap-1 text-base md:text-sm"
+                  style={{ contentVisibility: "auto" }}>
+                  {selectedAuthor.stories.map((story, idx) => (
+                    <a
+                      key={story.link}
+                      href={story.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-between p-2 hover:bg-gray-100 rounded-md group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 transition-colors">
+                      <span className="text-gray-400 font-medium w-6 lg:w-8 shrink-0 text-right mr-3 tabular-nums">
+                        {idx + 1}.
+                      </span>
+                      <span className="text-blue-700 group-hover:underline truncate flex-1 min-w-0 mr-4">
+                        {story.title}
+                      </span>
+                      <span className="bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full text-xs font-medium tabular-nums shrink-0">
+                        {story.count}
+                      </span>
+                    </a>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 text-base md:text-sm">
+                  {selectedAuthor.stories.map((story) => (
+                    <a
+                      key={story.link}
+                      href={story.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex flex-col justify-between p-4 border border-gray-200 rounded-lg bg-white hover:border-gray-300 hover:shadow-sm hover:-translate-y-0.5 transition-all group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500">
+                      <span className="text-blue-700 font-medium group-hover:underline line-clamp-2 mb-3 text-balance">
+                        {story.title}
+                      </span>
+                      <span className="self-end bg-gray-100 text-gray-700 border border-gray-200 px-2.5 py-1 rounded-full text-xs font-semibold tabular-nums">
+                        {story.count}
+                      </span>
+                    </a>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+        <footer className="bg-[#0d1117] border-t-2 border-purple-900/50 p-3 shrink-0 text-center font-mono text-xs z-10 w-full flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-4">
+          <p className="text-gray-400">
+            Export saved stories for offline. Try{" "}
+            <a
+              href="https://github.com/Jemeni11/TalesTrove"
+              target="_blank"
+              rel="noreferrer"
+              className="text-purple-400 font-bold hover:text-purple-300 underline underline-offset-4">
+              TalesTrove
+            </a>
+          </p>
+          <span className="hidden sm:inline text-gray-700">|</span>
+          <a
+            href="https://www.buymeacoffee.com/jemeni11"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-gray-400 font-bold hover:text-[#FFDD00] flex items-center gap-1.5 transition-colors group">
+            <BuyMeACoffeeIcon className="w-4 h-4 text-gray-400 group-hover:text-[#FFDD00]" />
+            Buy me a coffee
+          </a>
+        </footer>
       </main>
     </div>
   )

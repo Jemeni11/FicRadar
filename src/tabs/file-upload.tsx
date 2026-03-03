@@ -5,7 +5,7 @@ import { Storage } from "@plasmohq/storage"
 
 import "../style.css"
 
-import { LinkOutIcon } from "@/icons"
+import { BuyMeACoffeeIcon, LinkOutIcon } from "@/icons"
 import { cn } from "@/lib/utils"
 
 const storage = new Storage({ area: "local" })
@@ -94,9 +94,9 @@ export default function FileUploadTab() {
   }
 
   return (
-    <div className="flex flex-col sm:flex-row sm:h-screen">
+    <div className="flex flex-col sm:flex-row sm:h-screen relative">
       {/* Sidebar */}
-      <aside className="w-full sm:w-64 bg-gray-50 border-r border-gray-200 flex flex-col">
+      <aside className="size-full shrink-0 sm:w-64 bg-gray-50 border-r border-gray-200 flex flex-col">
         <div className="sticky top-0 bg-gray-50 z-10 border-b pb-4">
           <div className="p-4 font-bold text-lg border-b">Upload</div>
 
@@ -157,49 +157,74 @@ export default function FileUploadTab() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto p-8 bg-white">
-        <h1 className="text-2xl font-bold mb-6">FicRadar File Upload</h1>
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <main className="flex-1 overflow-auto p-8 bg-white">
+          <h1 className="text-2xl font-bold mb-6">FicRadar File Upload</h1>
 
-        <form onSubmit={handleFileSubmit} className="space-y-4 w-full max-w-md">
-          {/* Hidden file input */}
-          <input
-            ref={fileInputRef}
-            id="file"
-            type="file"
-            accept="application/json,text/plain"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0]
-              if (file) setSelectedFileName(file.name)
-            }}
-          />
+          <form
+            onSubmit={handleFileSubmit}
+            className="space-y-4 w-full max-w-md">
+            {/* Hidden file input */}
+            <input
+              ref={fileInputRef}
+              id="file"
+              type="file"
+              accept="application/json,text/plain"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (file) setSelectedFileName(file.name)
+              }}
+            />
 
-          {/* Label styled like a button */}
-          <label
-            htmlFor="file"
-            className={cn(
-              "w-full block rounded-3xl text-lg text-center py-1.5 border-2 cursor-pointer transition-colors",
-              isUploading
-                ? "border-gray-500 text-gray-500 cursor-not-allowed"
-                : "border-fr-1 text-fr-1 hover:bg-fr-1 hover:text-white",
-            )}>
-            {selectedFileName || "Choose File"}
-          </label>
+            {/* Label styled like a button */}
+            <label
+              htmlFor="file"
+              className={cn(
+                "w-full block rounded-3xl text-lg text-center py-1.5 border-2 cursor-pointer transition-colors",
+                isUploading
+                  ? "border-gray-500 text-gray-500 cursor-not-allowed"
+                  : "border-fr-1 text-fr-1 hover:bg-fr-1 hover:text-white",
+              )}>
+              {selectedFileName || "Choose File"}
+            </label>
 
-          {/* Feedback */}
-          {error && <div className="text-red-500 text-sm">{error}</div>}
-          {success && <div className="text-green-600 text-sm">{success}</div>}
+            {/* Feedback */}
+            {error && <div className="text-red-500 text-sm">{error}</div>}
+            {success && <div className="text-green-600 text-sm">{success}</div>}
 
-          {/* Upload button */}
-          <button
-            type="submit"
-            disabled={isUploading || !selectedFileName?.trim()}
-            className="w-full inline-flex justify-center items-center gap-2 rounded-3xl text-lg bg-fr-1 text-center py-1.5 disabled:opacity-50">
-            <span>{isUploading ? "Processing..." : "Upload & Scan"}</span>
-            <LinkOutIcon className="size-4" />
-          </button>
-        </form>
-      </main>
+            {/* Upload button */}
+            <button
+              type="submit"
+              disabled={isUploading || !selectedFileName?.trim()}
+              className="w-full inline-flex justify-center items-center gap-2 rounded-3xl text-lg bg-fr-1 text-center py-1.5 disabled:opacity-50">
+              <span>{isUploading ? "Processing..." : "Upload & Scan"}</span>
+              <LinkOutIcon className="size-4" />
+            </button>
+          </form>
+        </main>
+        <footer className="bg-[#0d1117] border-t-2 border-purple-900/50 p-3 shrink-0 text-center font-mono text-xs z-10 w-full flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-4">
+          <p className="text-gray-400">
+            Export saved stories for offline. Try{" "}
+            <a
+              href="https://github.com/Jemeni11/TalesTrove"
+              target="_blank"
+              rel="noreferrer"
+              className="text-purple-400 font-bold hover:text-purple-300 underline underline-offset-4">
+              TalesTrove
+            </a>
+          </p>
+          <span className="hidden sm:inline text-gray-700">|</span>
+          <a
+            href="https://www.buymeacoffee.com/jemeni11"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-gray-400 font-bold hover:text-[#FFDD00] flex items-center gap-1.5 transition-colors group">
+            <BuyMeACoffeeIcon className="w-4 h-4 text-gray-400 group-hover:text-[#FFDD00]" />
+            Buy me a coffee
+          </a>
+        </footer>
+      </div>
     </div>
   )
 }

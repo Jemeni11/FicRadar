@@ -1,4 +1,4 @@
-import type { AuthorStatus, StoryResult } from "@/types"
+import type { AuthorStatus } from "@/types"
 
 export default function saveHTMLFile(data: AuthorStatus, fileName: string) {
   if (data.stories.length === 0) {
@@ -6,7 +6,7 @@ export default function saveHTMLFile(data: AuthorStatus, fileName: string) {
     return
   }
 
-  const headers = Object.keys(data[0].stories[0]) as Array<keyof StoryResult>
+  const headers = Object.keys(data.stories[0])
 
   const rows = data.stories.map((row) => {
     const cells = headers.map((header) => {

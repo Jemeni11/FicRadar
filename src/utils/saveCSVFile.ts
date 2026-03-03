@@ -1,4 +1,4 @@
-import type { AuthorStatus, StoryResult } from "@/types"
+import type { AuthorStatus } from "@/types"
 
 export default function saveCSVFile(data: AuthorStatus, fileName: string) {
   if (data.stories.length === 0) {
@@ -8,11 +8,17 @@ export default function saveCSVFile(data: AuthorStatus, fileName: string) {
 
   const headers = Object.keys(data.stories[0])
 
+  const csvEscape = (value: string) => {
+    const escaped = value.replace(/"/g, '""')
+    return /[",\n]/.test(escaped) ? `"${escaped}"` : escaped
+  }
+
   const rows = data.stories.map(
-    (row) => `${row.title},${row.link},${row.count}`,
+    (row) =>
+      `${csvEscape(row.title)},${csvEscape(row.link)},${csvEscape(String(row.count))}`,
   )
 
-  const content = `${headers.join(",")}\n${rows.join("\n")}`
+  const content = `\uFEFF${headers.join(",")}\n${rows.join("\n")}`
 
   const blob = new Blob([content], { type: "text/csv;charset=utf-8;" })
   const url = URL.createObjectURL(blob)
