@@ -15,8 +15,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Nil
+
+## [1.2.0] - 2026-03-03
+
+### Added
+
+- Add real‑time scraping logs to the Author Scrape tab with `debug`/`info`/`warn`/`error` levels and timestamps.
+- Add list / grid view toggle for story results in the Author Scrape tab.
+- Add consistent footer with “Buy me a coffee” button and TalesTrove project link to both Author Scrape and File Upload tabs.
+- Add structured `LogLevel` and `LogEntry` types to `src/types/index.ts` to support adapter logging.
+- Add favicon to `author-scrape.html` and `file-upload.html`.
+
+### Changed
+
+- Switch XenForo adapter to use `progressCallback`‑driven logging instead of raw `console.*` calls, so logs appear in the UI without interfering with page‑progress values.
+- Rename `*.html` bookmark exports to `*_stories_bookmark.html` to distinguish from regular `*.html` exports.
+- Update `saveCSVFile` to escape CSV cells and add a UTF‑8 BOM (`\\uFEFF`) for better compatibility with spreadsheet apps.
+- Update `saveHTMLFile` to simplify header‑extraction logic and remove redundant `StoryResult`‑type import.
+- Restructure `author-scrape.tsx` and `file-upload.tsx` main‑content containers to use `flex flex‑col` and `overflow‑hidden` layouts while preserving responsive padding and spacing.
+
 ### Fixed
 
+- Improve XenForo adapter’s edge‑case handling:
+  - Log clearer messages when user has no recent content or no results on a page.
+- Improve story‑list layout:
+  - Use `w-full` container and `break‑all` for `author.name` to better handle long usernames.
+  - Update page‑progress bar to avoid division‑by‑zero by using `Math.max(pagesTotal, 1)`.
+- Minor fix in `extractUsername.ts` to handle `/search/member?user_id=`‑style URLs instead of silently failing.
 - Corrected minimum Firefox version to 79 (from 45 desktop / 54 Android) in both documentation and manifest.
 
 ## [1.1.0] - 2025-09-25
@@ -48,6 +74,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Released FicRadar
 
-[unreleased]: https://github.com/Jemeni11/FicRadar/compare/v1.1.0...HEAD
+[unreleased]: https://github.com/Jemeni11/FicRadar/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/Jemeni11/FicRadar/releases/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/Jemeni11/FicRadar/releases/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/Jemeni11/FicRadar/releases/tag/v1.0.0
