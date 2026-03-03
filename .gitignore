@@ -29,6 +29,17 @@ out/
 build/
 dist/
 
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
 # plasmo - https://www.plasmo.com
 .plasmo
 
@@ -38,3 +49,6 @@ keys.json
 # typescript
 .tsbuildinfo
 diff.txt
+
+.agent
+AGENTS.md

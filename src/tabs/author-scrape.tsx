@@ -77,6 +77,7 @@ export default function AuthorScrapeTab() {
   })
   const [hasStartedScraping, setHasStartedScraping] = useState(false)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list")
 
   const updateStatus = (
     index: number,
@@ -406,13 +407,13 @@ export default function AuthorScrapeTab() {
         </div>
 
         {selectedAuthor?.status === "queued" && (
-          <div className="text-gray-400 italic">Awaiting scraping...</div>
+          <div className="text-gray-400 italic">Awaiting scraping…</div>
         )}
 
         {selectedAuthor?.status === "pending" && (
           <>
             <div className="text-gray-500 animate-pulse">
-              Scraping in progress...
+              Scraping in progress…
             </div>
             <div className="my-8 text-sm text-gray-600">
               Page Progress: {progressData.page}/{progressData.totalPages}
@@ -437,22 +438,95 @@ export default function AuthorScrapeTab() {
 
         {selectedAuthor?.status === "success" && (
           <>
-            <p className="text-gray-600 mb-2">
-              {selectedAuthor.stories.length} stories found:
-            </p>
-            <ol className="list-decimal list-inside space-y-4 text-base md:text-sm">
-              {selectedAuthor.stories.map((story) => (
-                <li key={story.link} data-count={story.count}>
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-gray-600">
+                {selectedAuthor.stories.length} stories found:
+              </p>
+
+              <div className="flex bg-gray-200 rounded-md p-0.5">
+                <button
+                  type="button"
+                  aria-label="List View"
+                  onClick={() => setViewMode("list")}
+                  className={`p-1.5 rounded-sm transition-colors focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-purple-500 ${
+                    viewMode === "list"
+                      ? "bg-white shadow-sm text-purple-700 font-medium"
+                      : "text-gray-500 hover:text-gray-800 hover:bg-gray-300"
+                  }`}>
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 6h16M4 12h16M4 18h16"
+                    />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  aria-label="Grid View"
+                  onClick={() => setViewMode("grid")}
+                  className={`p-1.5 rounded-sm transition-colors focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-purple-500 ${
+                    viewMode === "grid"
+                      ? "bg-white shadow-sm text-purple-700 font-medium"
+                      : "text-gray-500 hover:text-gray-800 hover:bg-gray-300"
+                  }`}>
+                  <svg
+                    className="w-4 h-4"
+                    fill="currentColor"
+                    viewBox="0 0 24 24">
+                    <path d="M4 6h4v4H4V6zm12 0h4v4h-4V6zM4 14h4v4H4v-4zm12 0h4v4h-4v-4z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {viewMode === "list" ? (
+              <div
+                className="flex flex-col gap-1 text-base md:text-sm"
+                style={{ contentVisibility: "auto" }}>
+                {selectedAuthor.stories.map((story, idx) => (
                   <a
+                    key={story.link}
                     href={story.link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline">
-                    {story.title}
+                    className="flex items-center justify-between p-2 hover:bg-gray-100 rounded-md group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 transition-colors">
+                    <span className="text-gray-400 font-medium w-6 lg:w-8 shrink-0 text-right mr-3 tabular-nums">
+                      {idx + 1}.
+                    </span>
+                    <span className="text-blue-700 group-hover:underline truncate flex-1 min-w-0 mr-4">
+                      {story.title}
+                    </span>
+                    <span className="bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full text-xs font-medium tabular-nums shrink-0">
+                      {story.count}
+                    </span>
                   </a>
-                </li>
-              ))}
-            </ol>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 text-base md:text-sm">
+                {selectedAuthor.stories.map((story) => (
+                  <a
+                    key={story.link}
+                    href={story.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex flex-col justify-between p-4 border border-gray-200 rounded-lg bg-white hover:border-gray-300 hover:shadow-sm hover:-translate-y-0.5 transition-all group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500">
+                    <span className="text-blue-700 font-medium group-hover:underline line-clamp-2 mb-3 text-balance">
+                      {story.title}
+                    </span>
+                    <span className="self-end bg-gray-100 text-gray-700 border border-gray-200 px-2.5 py-1 rounded-full text-xs font-semibold tabular-nums">
+                      {story.count}
+                    </span>
+                  </a>
+                ))}
+              </div>
+            )}
           </>
         )}
       </main>
