@@ -2,7 +2,7 @@
 
 <div align="center">
   <a href="https://github.com/Jemeni11/FicRadar">
-    <img src="assets/icon.png" alt="FicRadar Logo" width="80" height="80">
+    <img src="public/icon.png" alt="FicRadar Logo" width="80" height="80">
   </a>
 
 <h1 align="center">FicRadar</h1>
@@ -47,7 +47,7 @@
 
 **FicRadar** is a browser extension that extracts and ranks fanfiction links from user-visible forum posts and interactions. It helps you discover stories that people (especially your favorite authors) frequently interact with—by scraping and ranking their forum activity.
 
-This project is built with the [Plasmo](https://docs.plasmo.com/) framework.
+This project is built with [WXT](https://wxt.dev/) and before v2.0.0, [Plasmo](https://docs.plasmo.com/) was used.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -115,7 +115,6 @@ _The APIs determine the minimum Android version._
 
 1. Enable Developer Mode in Chrome or Firefox.
 2. Visit the [Releases Page](https://github.com/Jemeni11/FicRadar/releases) and download:
-
    - `chrome-mv3-prod.zip` for Chromium browsers
    - `firefox-mv2-prod.zip` for Firefox
 
