@@ -94,7 +94,9 @@ export default function Popup() {
         const parsed = JSON.parse(text)
 
         if (!Array.isArray(parsed)) {
-          throw new Error('Uploaded JSON file does not contain a valid array.')
+          throw new Error(
+            'The uploaded JSON file is missing the required list of authors.',
+          )
         }
 
         const isValid = parsed.every(
@@ -121,7 +123,7 @@ export default function Popup() {
             links.push(trimmed)
           }
 
-          // TalesTrove format: `Author Link: https://...`
+          // TalesTrove format: `Author Link: https://…`
           else if (trimmed.startsWith('Author Link:')) {
             const link = trimmed.replace('Author Link:', '').trim()
             if (/^https?:\/\/\S+$/.test(link)) {
@@ -139,7 +141,7 @@ export default function Popup() {
 
       await storage.setItem<string[]>('local:batchAuthorStories', stories)
 
-      setSuccess('File processed successfully! Opening scanner...')
+      setSuccess('File processed successfully! Opening scanner…')
 
       void browser.tabs.create({
         url: browser.runtime.getURL('/author-scrape.html'),
@@ -149,7 +151,7 @@ export default function Popup() {
       setError(
         err instanceof Error
           ? err.message
-          : 'Invalid file format. Please upload a proper TalesTrove XenForo JSON or a TXT file.',
+          : "We couldn't read that file. Please upload a valid TalesTrove JSON or a supported TXT file.",
       )
     }
 
@@ -174,7 +176,7 @@ export default function Popup() {
 
       await storage.setItem<string>('local:singleAuthorURL', currentUrl)
 
-      setSuccess('Opening scanner...')
+      setSuccess('Opening scanner…')
       void browser.tabs.create({
         url: browser.runtime.getURL('/author-scrape.html'),
       })
@@ -195,7 +197,7 @@ export default function Popup() {
 
       <div className="flex h-full flex-col gap-8 bg-fr-3 p-4 text-white">
         <div className="my-2 w-full text-center">
-          <h1 className="mb-2 text-6xl font-bold">FicRadar</h1>
+          <h1 className="mb-2 text-6xl font-bold text-balance">FicRadar</h1>
           <a
             href="https://github.com/Jemeni11/FicRadar"
             target="_blank"
@@ -219,8 +221,8 @@ export default function Popup() {
             aria-label="Paste a Link"
             value="paste"
             className={cn(
-              inputMethod === 'paste' && 'rounded-3xl bg-fr-1',
-              'w-full flex-1 text-center transition-colors',
+              inputMethod === 'paste' && 'rounded-[18px] bg-fr-1',
+              'w-full flex-1 text-center transition-colors active:scale-[0.97]',
             )}
           >
             Paste a Link
@@ -229,8 +231,8 @@ export default function Popup() {
             aria-label="Upload a File"
             value="file"
             className={cn(
-              inputMethod === 'file' && 'rounded-3xl bg-fr-1',
-              'w-full flex-1 text-center transition-colors',
+              inputMethod === 'file' && 'rounded-[18px] bg-fr-1',
+              'w-full flex-1 text-center transition-colors active:scale-[0.97]',
             )}
           >
             Upload a File
@@ -275,7 +277,7 @@ export default function Popup() {
               disabled={isScanning || !currentUrl.trim() || !!urlError}
               className="inline-flex w-full items-center justify-center gap-2 rounded-3xl bg-fr-1 py-1.5 text-center text-lg disabled:opacity-50"
             >
-              <span>{isScanning ? 'Scanning...' : 'Scan Link'}</span>
+              <span>{isScanning ? 'Scanning…' : 'Scan Link'}</span>
               <LinkOutIcon className="size-4" />
             </button>
           </form>
@@ -351,8 +353,8 @@ export default function Popup() {
                         supported.
                         <br />
                         <br />
-                        LinksOnlyTXT is not supported. Those are story links not
-                        author links.
+                        LinksOnlyTXT format isn't supported because it contains
+                        story links, not author profiles.
                       </p>
                     </PopoverContent>
                   </Popover>
@@ -426,7 +428,7 @@ export default function Popup() {
                       : 'border-fr-1 text-fr-1 hover:bg-fr-1 hover:text-white',
                   )}
                 >
-                  {selectedFileName || 'Choose File'}
+                  {selectedFileName || 'Select File'}
                 </label>
 
                 <button
@@ -434,7 +436,7 @@ export default function Popup() {
                   disabled={isUploading || !selectedFileName?.trim()}
                   className="inline-flex w-full items-center justify-center gap-2 rounded-3xl bg-fr-1 py-1.5 text-center text-lg disabled:opacity-50"
                 >
-                  <span>{isUploading ? 'Processing...' : 'Upload & Scan'}</span>
+                  <span>{isUploading ? 'Processing…' : 'Upload & Scan'}</span>
                   <LinkOutIcon className="size-4" />
                 </button>
               </form>
