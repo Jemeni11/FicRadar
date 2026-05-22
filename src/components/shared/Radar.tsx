@@ -1,12 +1,13 @@
-const Radar = () => {
+export default function Radar() {
   return (
-    <div className="relative w-40 min-h-40">
+    <div className="relative min-h-40 w-40">
       {/* Static SVG Radar Base */}
       <svg
-        className="absolute top-0 left-0 w-full h-full"
+        className="absolute top-0 left-0 h-full w-full"
         viewBox="0 0 1024 1024"
         fill="none"
-        xmlns="http://www.w3.org/2000/svg">
+        xmlns="http://www.w3.org/2000/svg"
+      >
         <rect width="1024" height="1024" rx="64" fill="#121217" />
         <circle
           cx="511.8"
@@ -67,9 +68,7 @@ const Radar = () => {
       </svg>
 
       {/* Sweep effect */}
-      <div className="absolute top-0 left-0 w-full h-full rounded-full animate-spin-slow pointer-events-none [mask-image:radial-gradient(circle_at_center,black_90%,transparent_100%)] [background:conic-gradient(rgba(64,67,186,0.4)_0deg,rgba(64,67,186,0.1)_30deg,transparent_60deg,transparent_360deg)]" />
+      <div className="pointer-events-none absolute top-0 left-0 h-full w-full animate-spin-slow rounded-full mask-[radial-gradient(circle_at_center,black_90%,transparent_100%)] [background:conic-gradient(rgba(64,67,186,0.4)_0deg,rgba(64,67,186,0.1)_30deg,transparent_60deg,transparent_360deg)]" />
     </div>
   )
 }
-
-export default Radar

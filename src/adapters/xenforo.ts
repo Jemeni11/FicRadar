@@ -1,20 +1,7 @@
-import type { ProgressData, StoryResult } from "@/types"
-import { customError, delay, withDomain } from "@/utils"
+import { customError, delay } from '@/utils/helpers'
+import { withDomain, parseHTMLDocument, removePostNumber } from '@/utils/url'
 
-function parseHTMLDocument(html: string): Document {
-  return new DOMParser().parseFromString(html, "text/html")
-}
-
-// Remove everything after the last slash if it starts with "post-"
-function removePostNumber(url: string): string {
-  const urlObj = new URL(url)
-  const pathParts = urlObj.pathname.split("/")
-  if (pathParts[pathParts.length - 1].startsWith("post-")) {
-    pathParts.pop()
-    urlObj.pathname = pathParts.join("/")
-  }
-  return urlObj.toString()
-}
+import type { ProgressData, StoryResult } from '@/types'
 
 async function getXenForoData(
   adapterName: string,
@@ -26,16 +13,16 @@ async function getXenForoData(
 
   const getDocument = async (url: string) => {
     const response = await fetch(url, {
-      mode: "cors",
-      credentials: "include",
-      headers: { "User-Agent": navigator.userAgent },
+      mode: 'cors',
+      credentials: 'include',
+      headers: { 'User-Agent': navigator.userAgent },
     })
     const html = await response.text()
     const document = parseHTMLDocument(html)
 
     if (response.status === 403 || response.status === 401) {
       const blockMessage = document
-        .querySelector(".blockMessage")
+        .querySelector('.blockMessage')
         ?.textContent?.trim()
 
       if (blockMessage === "This user's profile is not available.") {
@@ -45,7 +32,7 @@ async function getXenForoData(
       }
     }
 
-    const baseTag = document.createElement("base")
+    const baseTag = document.createElement('base')
     baseTag.href = baseURL
     document.head.prepend(baseTag)
 
@@ -53,27 +40,27 @@ async function getXenForoData(
   }
 
   async function collectPaginatedResults(
-    adapterName: string,
-    baseURL: string,
+    cprAdapterName: string,
+    cprBaseURL: string,
     initialUrl: string,
-    data: StoryResult[],
-    progressCallback: (progress: ProgressData) => void,
+    cprData: StoryResult[],
+    cprProgressCallback: (progress: ProgressData) => void,
     segmentIndex: number = 0,
     pageOffset: number = 0,
-  ): Promise<number> {
+  ): Promise<void> {
     const sendLog = (
-      level: "debug" | "info" | "warn" | "error",
+      level: 'debug' | 'info' | 'warn' | 'error',
       message: string,
     ) => {
       // Still log to actual console for dev debugging
-      if (level === "debug" || level === "info")
-        console.log(`[${adapterName}] ${message}`)
-      else if (level === "warn") console.warn(`[${adapterName}] ${message}`)
-      else console.error(`[${adapterName}] ${message}`)
+      if (level === 'debug' || level === 'info')
+        console.log(`[${cprAdapterName}] ${message}`)
+      else if (level === 'warn') console.warn(`[${cprAdapterName}] ${message}`)
+      else console.error(`[${cprAdapterName}] ${message}`)
 
       // Since sendLog only knows static data most of the time, we emit a zero payload
       // and intercept it in react so IT DOES NOT OVERRIDE the real page progress numbers.
-      progressCallback({
+      cprProgressCallback({
         page: -1,
         totalPages: -1,
         found: -1,
@@ -86,7 +73,7 @@ async function getXenForoData(
     }
 
     sendLog(
-      "debug",
+      'debug',
       segmentIndex === 0
         ? `Initiating search for user content…\nURL: ${initialUrl}`
         : `Fetching next block of older results…\nURL: ${initialUrl}`,
@@ -94,21 +81,21 @@ async function getXenForoData(
 
     const firstPageDoc = await getDocument(initialUrl)
 
-    const nav = firstPageDoc.querySelector("nav.pageNavWrapper ul.pageNav-main")
+    const nav = firstPageDoc.querySelector('nav.pageNavWrapper ul.pageNav-main')
     const sampleLink = nav?.querySelector(
       "a[href*='page=']",
     ) as HTMLAnchorElement | null
-    const sampleHref = sampleLink?.getAttribute("href") || ""
+    const sampleHref = sampleLink?.getAttribute('href') || ''
     const last = nav?.lastElementChild?.textContent
-    const totalPages = sampleLink ? parseInt(last ?? "1", 10) : 1
+    const totalPages = sampleLink ? parseInt(last ?? '1', 10) : 1
 
     const urlTemplate = sampleHref
-      ? new URL(withDomain(baseURL, sampleHref))
+      ? new URL(withDomain(cprBaseURL, sampleHref))
       : new URL(initialUrl)
 
     const basePath = urlTemplate.origin + urlTemplate.pathname
     const baseParams = urlTemplate.searchParams
-    const pageParamName = "page"
+    const pageParamName = 'page'
 
     for (let pageNo = 1; pageNo <= totalPages; pageNo++) {
       try {
@@ -119,11 +106,11 @@ async function getXenForoData(
         const doc = await getDocument(pageUrl)
 
         const blockMessages = Array.from(
-          doc.querySelectorAll(".blockMessage"),
+          doc.querySelectorAll('.blockMessage'),
         ) as HTMLElement[]
 
         const trimmedMessages = blockMessages.map(
-          (el) => el.textContent?.trim() ?? "",
+          (el) => el.textContent?.trim() ?? '',
         )
 
         // Case: new profile, no content ever
@@ -133,59 +120,62 @@ async function getXenForoData(
           )
         ) {
           sendLog(
-            "info",
+            'info',
             "This user hasn't posted any content recently. No stories to extract.",
           )
           return
         }
 
-        const ol: HTMLOListElement | null = doc.querySelector("ol.block-body")
+        const ol: HTMLOListElement | null = doc.querySelector('ol.block-body')
 
         // Case: this page has no results (end of "view older results" segment)
         if (
           trimmedMessages.length === 1 &&
-          trimmedMessages[0] === "No results found." &&
+          trimmedMessages[0] === 'No results found.' &&
           !ol
         ) {
           sendLog(
-            "info",
+            'info',
             "No results found on this page. Reached the end of the user's content.",
           )
           return
         }
 
         if (!ol) {
-          customError(adapterName, "There's no data for this link")
+          customError(cprAdapterName, "There's no data for this link")
         }
 
         const liArray = Array.from(ol.children) as HTMLLIElement[]
         liArray.forEach((li) => {
           const anchor = li.querySelector(
-            ".contentRow-main h3.contentRow-title > a",
+            '.contentRow-main h3.contentRow-title > a',
           ) as HTMLAnchorElement
           if (
             !anchor?.textContent ||
             !anchor.href ||
-            anchor.href.includes("/profile-posts/")
+            anchor.href.includes('/profile-posts/')
           )
             return
 
           const title = anchor.textContent.trim()
-          const href = removePostNumber(withDomain(baseURL, anchor.href))
-          const existing = data.find((d) => d.title === title)
-          existing
-            ? existing.count++
-            : data.push({ title, link: href, count: 1 })
+          const href = removePostNumber(withDomain(cprBaseURL, anchor.href))
+          const existingStoryResult = cprData.find((d) => d.title === title)
+          if (existingStoryResult) {
+            existingStoryResult.count++
+          } else {
+            const newStoryResult: StoryResult = { title, link: href, count: 1 }
+            cprData.push(newStoryResult)
+          }
         })
 
-        progressCallback({
+        cprProgressCallback({
           page: pageOffset + pageNo,
           totalPages: pageOffset + totalPages,
-          found: data.length,
+          found: cprData.length,
         })
         sendLog(
-          "info",
-          `Successfully parsed page ${pageNo} of ${totalPages}. Total unique threads discovered: ${data.length}.`,
+          'info',
+          `Successfully parsed page ${pageNo} of ${totalPages}. Total unique threads discovered: ${cprData.length}.`,
         )
 
         // Only delay if there are more pages ahead
@@ -196,19 +186,19 @@ async function getXenForoData(
         // Check for "View older results" *on the last page*
         if (pageNo === totalPages) {
           const viewOlder = ol.nextElementSibling?.querySelector(
-            "a.button--link.button",
+            'a.button--link.button',
           ) as HTMLAnchorElement | null
           if (viewOlder?.href) {
-            const nextURL = withDomain(baseURL, viewOlder.href)
+            const nextURL = withDomain(cprBaseURL, viewOlder.href)
             const nextOffset = pageOffset + totalPages
 
             if (segmentIndex > 10) {
               sendLog(
-                "error",
+                'error',
                 "Exceeded maximum 'older results' segments. Aborting to prevent infinite loop.",
               )
               customError(
-                adapterName,
+                cprAdapterName,
                 "Too many 'older results' segments. Aborting to prevent infinite loop.",
               )
             }
@@ -216,11 +206,11 @@ async function getXenForoData(
             await delay(4000)
 
             await collectPaginatedResults(
-              adapterName,
-              baseURL,
+              cprAdapterName,
+              cprBaseURL,
               nextURL,
-              data,
-              progressCallback,
+              cprData,
+              cprProgressCallback,
               segmentIndex + 1,
               nextOffset,
             )
@@ -228,20 +218,18 @@ async function getXenForoData(
         }
       } catch (error) {
         sendLog(
-          "warn",
-          `Error encountered while parsing page ${pageNo}. Skipping this page. Details: ${error}`,
+          'warn',
+          `Error encountered while parsing page ${pageNo}. Skipping this page. Details: ${error instanceof Error ? error.message : String(error)}`,
         )
         continue
       }
     }
-
-    return pageOffset + totalPages
   }
 
   try {
     const firstLink = withDomain(baseURL, userUrl)
 
-    console.log("🔍 Scraping started for:", firstLink)
+    console.log('🔍 Scraping started for:', firstLink)
 
     const profileDoc = await getDocument(firstLink)
 
@@ -250,7 +238,7 @@ async function getXenForoData(
     ) as HTMLAnchorElement | null
 
     if (!link) {
-      customError(adapterName, "Could not find user content link")
+      customError(adapterName, 'Could not find user content link')
     }
 
     const pageUrl = link.href

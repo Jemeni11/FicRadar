@@ -1,5 +1,14 @@
-import ExportButton from "@/components/ExportButton"
-import { SUPPORTED_SITES } from "@/constants"
+import { useEffect, useRef, useState } from 'react'
+
+import { storage } from '#imports'
+
+import {
+  getQuestionableQuestingData,
+  getSpaceBattlesData,
+  getSufficientVelocityData,
+} from '@/adapters'
+import ExportButton from '@/components/shared/ExportButton'
+import { SUPPORTED_SITES } from '@/constants'
 import {
   BookmarksHTMLIcon,
   BuyMeACoffeeIcon,
@@ -7,38 +16,27 @@ import {
   HTMLIcon,
   JSONIcon,
   TXTIcon,
-} from "@/icons"
-import type {
-  AuthorStatus,
-  LogEntry,
-  ProgressData,
-  StoryResult,
-  SupportedSites,
-} from "@/types"
+} from '@/icons'
 import {
-  delay,
-  extractUsername,
   handleGlobalExport,
   saveBookmarkHTMLFile,
   saveCSVFile,
   saveHTMLFile,
   saveJSONFile,
   saveTXTFile,
-  sortByCountDescending,
-} from "@/utils"
-import { useEffect, useRef, useState } from "react"
+} from '@/utils/export'
+import { delay, sortByCountDescending } from '@/utils/helpers'
+import { extractUsername } from '@/utils/url'
 
-import { Storage } from "@plasmohq/storage"
+import '@/assets/tailwind.css'
 
-import "../style.css"
-
-import {
-  getQuestionableQuestingData,
-  getSpaceBattlesData,
-  getSufficientVelocityData,
-} from "@/adapters"
-
-const storage = new Storage({ area: "local" })
+import type {
+  AuthorStatus,
+  LogEntry,
+  ProgressData,
+  StoryResult,
+  SupportedSites,
+} from '@/types'
 
 const scrapeAuthor = async (
   id: SupportedSites,
@@ -49,13 +47,13 @@ const scrapeAuthor = async (
     let data: StoryResult[] = []
 
     switch (id) {
-      case "QuestionableQuesting":
+      case 'QuestionableQuesting':
         data = await getQuestionableQuestingData(url, progressCallback)
         break
-      case "SpaceBattles":
+      case 'SpaceBattles':
         data = await getSpaceBattlesData(url, progressCallback)
         break
-      case "SufficientVelocity":
+      case 'SufficientVelocity':
         data = await getSufficientVelocityData(url, progressCallback)
         break
     }
@@ -77,18 +75,18 @@ export default function AuthorScrapeTab() {
   })
   const [hasStartedScraping, setHasStartedScraping] = useState(false)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const [viewMode, setViewMode] = useState<"list" | "grid">("list")
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
   const [logs, setLogs] = useState<LogEntry[]>([])
 
   const logsEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    logsEndRef.current?.scrollIntoView({ behavior: "smooth" })
+    logsEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [logs])
 
   const updateStatus = (
     index: number,
-    status: AuthorStatus["status"],
+    status: AuthorStatus['status'],
     stories?: StoryResult[],
   ) => {
     setAuthors((prev) => {
@@ -103,7 +101,7 @@ export default function AuthorScrapeTab() {
   }
 
   const scrapeAllAuthors = async (authorList: AuthorStatus[]) => {
-    console.log("🔍 scrapeAllAuthors called with:", authorList)
+    console.log('🔍 scrapeAllAuthors called with:', authorList)
 
     for (let i = 0; i < authorList.length; i++) {
       console.log(authorList)
@@ -111,17 +109,17 @@ export default function AuthorScrapeTab() {
       const author = authorList[i]
       setSelectedAuthorIndex(i)
 
-      updateStatus(i, "pending")
+      updateStatus(i, 'pending')
 
       try {
         const hostname = new URL(author.url).hostname
-        const id = SUPPORTED_SITES[hostname] as SupportedSites
+        const id = SUPPORTED_SITES[hostname]
 
         // Add delay between authors (but not for the first one)
         if (i > 0) {
-          console.log("Delaying for 3 seconds between authors")
+          console.log('Delaying for 3 seconds between authors')
           await delay(3000)
-          console.log("Delay over")
+          console.log('Delay over')
         }
 
         // Reset progress for this author
@@ -142,14 +140,14 @@ export default function AuthorScrapeTab() {
         })
 
         if (data) {
-          updateStatus(i, "success", sortByCountDescending(data))
+          updateStatus(i, 'success', sortByCountDescending(data))
           console.log(
             `Successfully scraped ${data.length} stories for ${author.name}`,
           )
         }
       } catch (err) {
-        console.error("Scrape error:", err)
-        updateStatus(i, "error")
+        console.error('Scrape error:', err)
+        updateStatus(i, 'error')
       }
     }
   }
@@ -191,15 +189,15 @@ export default function AuthorScrapeTab() {
     const init = async () => {
       try {
         const [batchList, singleURL] = await Promise.all([
-          storage.get("batchAuthorStories"),
-          storage.get("singleAuthorURL"),
+          storage.getItem<string[]>('local:batchAuthorStories'),
+          storage.getItem<string>('local:singleAuthorURL'),
         ])
 
         let links: string[] = []
 
         if (Array.isArray(batchList)) {
           links = batchList
-        } else if (typeof singleURL === "string" && singleURL.trim()) {
+        } else if (typeof singleURL === 'string' && singleURL.trim()) {
           links = [singleURL]
         }
 
@@ -212,25 +210,25 @@ export default function AuthorScrapeTab() {
           }
         })
 
-        console.log("Links: ", links)
-        console.log("Deduped Links: ", deduped)
+        console.log('Links: ', links)
+        console.log('Deduped Links: ', deduped)
 
         if (deduped.length === 0) {
-          console.warn("No valid URLs found to scrape")
+          console.warn('No valid URLs found to scrape')
           return
         }
 
         const authorStates: AuthorStatus[] = deduped.map((url) => ({
-          name: extractUsername(url) ?? "Unknown",
+          name: extractUsername(url) ?? 'Unknown',
           url,
-          status: "queued",
+          status: 'queued',
           stories: [],
         }))
 
         setAuthors(authorStates)
         setHasStartedScraping(true)
       } catch (err) {
-        console.error("Top-level init error", err)
+        console.error('Top-level init error', err)
       }
     }
 
@@ -245,20 +243,22 @@ export default function AuthorScrapeTab() {
 
   const selectedAuthor = authors[selectedAuthorIndex]
   const completedCount = authors.filter(
-    (a) => a.status === "success" || a.status === "error",
+    (a) => a.status === 'success' || a.status === 'error',
   ).length
 
   return (
-    <div className="flex h-screen relative">
+    <div className="relative flex h-screen">
       {/* Mobile toggle button */}
       <button
-        className="fixed top-4 left-4 z-30 p-2 bg-gray-800 text-white rounded-md min-[450px]:hidden"
-        onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
+        className="fixed top-4 left-4 z-30 rounded-md bg-gray-800 p-2 text-white min-[450px]:hidden"
+        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+      >
         <svg
-          className="w-5 h-5"
+          className="h-5 w-5"
           fill="none"
           stroke="currentColor"
-          viewBox="0 0 24 24">
+          viewBox="0 0 24 24"
+        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -271,34 +271,28 @@ export default function AuthorScrapeTab() {
       {/* Mobile overlay */}
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-20 min-[450px]:hidden"
+          className="bg-opacity-50 fixed inset-0 z-20 bg-black min-[450px]:hidden"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
 
       <aside
-        className={`
-        ${isSidebarOpen ? "visible translate-x-0" : "invisible min-[450px]:visible -translate-x-full"} 
-        min-[450px]:translate-x-0  
-        bg-gray-50 border-r border-gray-200 flex flex-col
-        fixed min-[450px]:relative 
-        h-full z-30 
-        transition-transform duration-300 ease-in-out
-        ${isSidebarOpen ? "w-full min-[450px]:w-64" : "w-0 min-[450px]:w-64"}
-        `}>
-        <div className="sticky top-0 bg-gray-50 z-10 space-y-4 border-b pb-4 w-full">
+        className={` ${isSidebarOpen ? 'visible translate-x-0' : 'invisible -translate-x-full min-[450px]:visible'} fixed z-30 flex h-full flex-col border-r border-gray-200 bg-gray-50 transition-transform duration-300 ease-in-out min-[450px]:relative min-[450px]:translate-x-0 ${isSidebarOpen ? 'w-full min-[450px]:w-64' : 'w-0 min-[450px]:w-64'} `}
+      >
+        <div className="sticky top-0 z-10 w-full space-y-4 border-b bg-gray-50 pb-4">
           <button
-            className="bg-red-700 py-2 min-[450px]:hidden px-4 w-[90%] rounded-md mx-[5%] my-2 text-white font-bold text-xl"
+            className="mx-[5%] my-2 w-[90%] rounded-md bg-red-700 px-4 py-2 text-xl font-bold text-white min-[450px]:hidden"
             type="button"
-            onClick={() => setIsSidebarOpen(false)}>
+            onClick={() => setIsSidebarOpen(false)}
+          >
             Close Sidebar
           </button>
-          <div className="p-4 font-bold text-lg border-b">Authors</div>
+          <div className="border-b p-4 text-lg font-bold">Authors</div>
           <div className="my-8 px-4 text-sm text-gray-600">
             Progress: {completedCount}/{authors.length}
-            <div className="w-full h-2 bg-gray-200 rounded my-2">
+            <div className="my-2 h-2 w-full rounded bg-gray-200">
               <div
-                className="h-full bg-purple-500 rounded transition-all duration-300"
+                className="h-full rounded bg-purple-500 transition-all duration-300"
                 style={{
                   width: `${(completedCount / authors.length) * 100}%`,
                 }}
@@ -306,17 +300,18 @@ export default function AuthorScrapeTab() {
             </div>
           </div>
           {completedCount === authors.length && authors.length > 1 && (
-            <div className="px-4 mb-6">
-              <label className="text-sm font-medium text-gray-700 block mb-1">
+            <div className="mb-6 px-4">
+              <label className="mb-1 block text-sm font-medium text-gray-700">
                 Export All Stories
               </label>
               <select
-                className="w-full px-3 py-2 border rounded text-sm bg-white"
+                className="w-full rounded border bg-white px-3 py-2 text-sm"
                 onChange={(e) => {
                   const format = e.target.value
                   if (!format) return
                   handleGlobalExport(authors, format)
-                }}>
+                }}
+              >
                 <option value="">Select format</option>
                 <option value="txt">Download All as TXT</option>
                 <option value="json">Download All as JSON</option>
@@ -327,26 +322,27 @@ export default function AuthorScrapeTab() {
             </div>
           )}
         </div>
-        <ul className="overflow-auto flex-1">
+        <ul className="flex-1 overflow-auto">
           {authors.map((author, idx) => (
             <li
               key={author.url}
-              className={`p-3 cursor-pointer flex items-center justify-between border-b text-sm hover:bg-gray-200 transition ${
-                idx === selectedAuthorIndex ? "bg-purple-100 font-semibold" : ""
+              className={`flex cursor-pointer items-center justify-between border-b p-3 text-sm transition hover:bg-gray-200 ${
+                idx === selectedAuthorIndex ? 'bg-purple-100 font-semibold' : ''
               }`}
               onClick={() => {
                 setSelectedAuthorIndex(idx)
                 if (window.innerWidth < 450) {
                   setIsSidebarOpen(false)
                 }
-              }}>
+              }}
+            >
               <span>{author.name}</span>
               <span className="text-xs text-gray-500">
-                {author.status === "queued" && "🟡 Not started"}
-                {author.status === "pending" && "⏳ Loading"}
-                {author.status === "success" &&
+                {author.status === 'queued' && '🟡 Not started'}
+                {author.status === 'pending' && '⏳ Loading'}
+                {author.status === 'success' &&
                   `${author.stories.length} stories`}
-                {author.status === "error" && "❌"}
+                {author.status === 'error' && '❌'}
               </span>
             </li>
           ))}
@@ -354,66 +350,69 @@ export default function AuthorScrapeTab() {
       </aside>
 
       <main
-        className={`flex-1 flex flex-col h-screen overflow-hidden transition-all duration-300 ${
-          isSidebarOpen ? "min-[450px]:ml-0 ml-16" : "ml-16 min-[450px]:ml-0"
-        }`}>
-        <div className="flex-1 overflow-y-auto py-4 px-8 min-[450px]:py-8 min-[450px]:px-8">
+        className={`flex h-screen flex-1 flex-col overflow-hidden transition-all duration-300 ${
+          isSidebarOpen ? 'ml-16 min-[450px]:ml-0' : 'ml-16 min-[450px]:ml-0'
+        }`}
+      >
+        <div className="flex-1 overflow-y-auto px-8 py-4 min-[450px]:px-8 min-[450px]:py-8">
           <div className="block max-w-full">
-            <h1 className="text-2xl font-bold mb-4 break-all">
+            <h1 className="mb-4 text-2xl font-bold break-all">
               <a
                 href={selectedAuthor?.url}
                 target="_blank"
-                className="hover:underline hover:text-fr-1 hover:underline-offset-4">
+                className="hover:text-fr-1 hover:underline hover:underline-offset-4"
+              >
                 {selectedAuthor?.name}
               </a>
             </h1>
-            {selectedAuthor?.status === "success" && (
+            {selectedAuthor?.status === 'success' && (
               <div className="mb-4">
-                <h2 className="text-sm text-gray-500 font-medium mb-2">
+                <h2 className="mb-2 text-sm font-medium text-gray-500">
                   Export stories as:
                 </h2>
-                <div className="hidden md:flex flex-wrap gap-2 mb-4">
+                <div className="mb-4 hidden flex-wrap gap-2 md:flex">
                   <ExportButton
                     label="TXT"
-                    icon={<TXTIcon className="w-4 h-4" />}
+                    icon={<TXTIcon className="h-4 w-4" />}
                     onClick={handleDownloadTXT}
                   />
                   <ExportButton
                     label="JSON"
-                    icon={<JSONIcon className="w-4 h-4" />}
+                    icon={<JSONIcon className="h-4 w-4" />}
                     onClick={handleDownloadJSON}
                   />
                   <ExportButton
                     label="CSV"
-                    icon={<CSVIcon className="w-4 h-4" />}
+                    icon={<CSVIcon className="h-4 w-4" />}
                     onClick={handleDownloadCSV}
                   />
                   <ExportButton
                     label="HTML"
-                    icon={<HTMLIcon className="w-4 h-4" />}
+                    icon={<HTMLIcon className="h-4 w-4" />}
                     onClick={handleDownloadHTML}
                   />
                   <ExportButton
                     label="Bookmark HTML"
-                    icon={<BookmarksHTMLIcon className="w-4 h-4" />}
+                    icon={<BookmarksHTMLIcon className="h-4 w-4" />}
                     onClick={handleDownloadBookmarkHTML}
                   />
                 </div>
 
-                <div className="md:hidden mb-4">
-                  <label className="text-sm text-gray-600 block mb-1">
+                <div className="mb-4 md:hidden">
+                  <label className="mb-1 block text-sm text-gray-600">
                     Export Format
                   </label>
                   <select
-                    className="w-full px-3 py-2 border rounded text-sm bg-white"
+                    className="w-full rounded border bg-white px-3 py-2 text-sm"
                     onChange={(e) => {
                       const format = e.target.value
-                      if (format === "txt") handleDownloadTXT()
-                      if (format === "json") handleDownloadJSON()
-                      if (format === "csv") handleDownloadCSV()
-                      if (format === "html") handleDownloadHTML()
-                      if (format === "bookmark") handleDownloadBookmarkHTML()
-                    }}>
+                      if (format === 'txt') handleDownloadTXT()
+                      if (format === 'json') handleDownloadJSON()
+                      if (format === 'csv') handleDownloadCSV()
+                      if (format === 'html') handleDownloadHTML()
+                      if (format === 'bookmark') handleDownloadBookmarkHTML()
+                    }}
+                  >
                     <option value="">Select format</option>
                     <option value="txt">Download TXT</option>
                     <option value="json">Download JSON</option>
@@ -426,21 +425,21 @@ export default function AuthorScrapeTab() {
             )}
           </div>
 
-          {selectedAuthor?.status === "queued" && (
+          {selectedAuthor?.status === 'queued' && (
             <div className="text-gray-400 italic">Awaiting scraping…</div>
           )}
 
-          {selectedAuthor?.status === "pending" && (
+          {selectedAuthor?.status === 'pending' && (
             <>
-              <div className="text-gray-500 animate-pulse mb-4">
+              <div className="mb-4 animate-pulse text-gray-500">
                 Scraping in progress…
               </div>
 
               <div className="mb-4 text-sm text-gray-600">
                 Page Progress: {progressData.page}/{progressData.totalPages}
-                <div className="w-full h-2 bg-gray-200 rounded my-2 border border-gray-300">
+                <div className="my-2 h-2 w-full rounded border border-gray-300 bg-gray-200">
                   <div
-                    className="h-full bg-purple-500 rounded transition-all duration-300"
+                    className="h-full rounded bg-purple-500 transition-all duration-300"
                     style={{
                       width: `${(progressData.page / Math.max(progressData.totalPages, 1)) * 100}%`,
                     }}
@@ -449,11 +448,11 @@ export default function AuthorScrapeTab() {
                 <small>Found {progressData.found} unique thread(s)</small>
               </div>
 
-              <div className="my-6 bg-[#0d1117] text-gray-300 font-mono text-xs rounded-md shadow-inner border border-gray-800 overflow-hidden flex flex-col h-64">
-                <div className="bg-gray-800 border-b border-gray-700 text-gray-400 px-3 py-1.5 text-[10px] uppercase font-bold flex items-center select-none">
+              <div className="my-6 flex h-64 flex-col overflow-hidden rounded-md border border-gray-800 bg-[#0d1117] font-mono text-xs text-gray-300 shadow-inner">
+                <div className="flex items-center border-b border-gray-700 bg-gray-800 px-3 py-1.5 text-[10px] font-bold text-gray-400 uppercase select-none">
                   <span>logs — {selectedAuthor.name}</span>
                 </div>
-                <div className="flex-1 overflow-y-auto p-3 flex flex-col font-mono leading-relaxed [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-gray-700 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-[#0d1117]">
+                <div className="flex flex-1 flex-col overflow-y-auto p-3 font-mono leading-relaxed [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-700 [&::-webkit-scrollbar-track]:bg-[#0d1117]">
                   {logs.length === 0 && (
                     <div className="text-gray-600 italic">
                       Waiting for logs…
@@ -462,28 +461,30 @@ export default function AuthorScrapeTab() {
                   {logs.map((log, i) => (
                     <div
                       key={i}
-                      className="flex flex-col lg:flex-row lg:items-start lg:gap-3 mb-2 lg:mb-1 hover:bg-[#161b22] px-1 -mx-1 rounded">
-                      <div className="flex gap-3 shrink-0 select-none">
+                      className="-mx-1 mb-2 flex flex-col rounded px-1 hover:bg-[#161b22] lg:mb-1 lg:flex-row lg:items-start lg:gap-3"
+                    >
+                      <div className="flex shrink-0 gap-3 select-none">
                         <span className="text-gray-500">
                           {new Date(log.timestamp)
                             .toISOString()
-                            .split("T")[1]
-                            .replace("Z", "")}
+                            .split('T')[1]
+                            .replace('Z', '')}
                         </span>
                         <span
-                          className={`font-bold uppercase w-12 ${
-                            log.level === "error"
-                              ? "text-red-400"
-                              : log.level === "warn"
-                                ? "text-yellow-400"
-                                : log.level === "info"
-                                  ? "text-blue-400"
-                                  : "text-green-400"
-                          }`}>
+                          className={`w-12 font-bold uppercase ${
+                            log.level === 'error'
+                              ? 'text-red-400'
+                              : log.level === 'warn'
+                                ? 'text-yellow-400'
+                                : log.level === 'info'
+                                  ? 'text-blue-400'
+                                  : 'text-green-400'
+                          }`}
+                        >
                           {log.level}
                         </span>
                       </div>
-                      <span className="text-gray-300 break-words whitespace-pre-wrap mt-1 lg:mt-0 flex-1">
+                      <span className="mt-1 flex-1 wrap-break-word whitespace-pre-wrap text-gray-300 lg:mt-0">
                         {log.message}
                       </span>
                     </div>
@@ -494,34 +495,36 @@ export default function AuthorScrapeTab() {
             </>
           )}
 
-          {selectedAuthor?.status === "error" && (
-            <div className="text-red-600 font-semibold">
+          {selectedAuthor?.status === 'error' && (
+            <div className="font-semibold text-red-600">
               ❌ Failed to scrape this author. Check the console for more info.
             </div>
           )}
 
-          {selectedAuthor?.status === "success" && (
+          {selectedAuthor?.status === 'success' && (
             <>
-              <div className="flex items-center justify-between mb-4">
+              <div className="mb-4 flex items-center justify-between">
                 <p className="text-gray-600">
                   {selectedAuthor.stories.length} stories found:
                 </p>
 
-                <div className="flex bg-gray-200 rounded-md p-0.5">
+                <div className="flex rounded-md bg-gray-200 p-0.5">
                   <button
                     type="button"
                     aria-label="List View"
-                    onClick={() => setViewMode("list")}
-                    className={`p-1.5 rounded-sm transition-colors focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-purple-500 ${
-                      viewMode === "list"
-                        ? "bg-white shadow-sm text-purple-700 font-medium"
-                        : "text-gray-500 hover:text-gray-800 hover:bg-gray-300"
-                    }`}>
+                    onClick={() => setViewMode('list')}
+                    className={`rounded-sm p-1.5 transition-colors focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none ${
+                      viewMode === 'list'
+                        ? 'bg-white font-medium text-purple-700 shadow-sm'
+                        : 'text-gray-500 hover:bg-gray-300 hover:text-gray-800'
+                    }`}
+                  >
                     <svg
-                      className="w-4 h-4"
+                      className="h-4 w-4"
                       fill="none"
                       stroke="currentColor"
-                      viewBox="0 0 24 24">
+                      viewBox="0 0 24 24"
+                    >
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -533,58 +536,63 @@ export default function AuthorScrapeTab() {
                   <button
                     type="button"
                     aria-label="Grid View"
-                    onClick={() => setViewMode("grid")}
-                    className={`p-1.5 rounded-sm transition-colors focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-purple-500 ${
-                      viewMode === "grid"
-                        ? "bg-white shadow-sm text-purple-700 font-medium"
-                        : "text-gray-500 hover:text-gray-800 hover:bg-gray-300"
-                    }`}>
+                    onClick={() => setViewMode('grid')}
+                    className={`rounded-sm p-1.5 transition-colors focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none ${
+                      viewMode === 'grid'
+                        ? 'bg-white font-medium text-purple-700 shadow-sm'
+                        : 'text-gray-500 hover:bg-gray-300 hover:text-gray-800'
+                    }`}
+                  >
                     <svg
-                      className="w-4 h-4"
+                      className="h-4 w-4"
                       fill="currentColor"
-                      viewBox="0 0 24 24">
+                      viewBox="0 0 24 24"
+                    >
                       <path d="M4 6h4v4H4V6zm12 0h4v4h-4V6zM4 14h4v4H4v-4zm12 0h4v4h-4v-4z" />
                     </svg>
                   </button>
                 </div>
               </div>
 
-              {viewMode === "list" ? (
+              {viewMode === 'list' ? (
                 <div
                   className="flex flex-col gap-1 text-base md:text-sm"
-                  style={{ contentVisibility: "auto" }}>
+                  style={{ contentVisibility: 'auto' }}
+                >
                   {selectedAuthor.stories.map((story, idx) => (
                     <a
                       key={story.link}
                       href={story.link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-between p-2 hover:bg-gray-100 rounded-md group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 transition-colors">
-                      <span className="text-gray-400 font-medium w-6 lg:w-8 shrink-0 text-right mr-3 tabular-nums">
+                      className="group flex items-center justify-between rounded-md p-2 transition-colors hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none"
+                    >
+                      <span className="mr-3 w-6 shrink-0 text-right font-medium text-gray-400 tabular-nums lg:w-8">
                         {idx + 1}.
                       </span>
-                      <span className="text-blue-700 group-hover:underline truncate flex-1 min-w-0 mr-4">
+                      <span className="mr-4 min-w-0 flex-1 truncate text-blue-700 group-hover:underline">
                         {story.title}
                       </span>
-                      <span className="bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full text-xs font-medium tabular-nums shrink-0">
+                      <span className="shrink-0 rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-700 tabular-nums">
                         {story.count}
                       </span>
                     </a>
                   ))}
                 </div>
               ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 text-base md:text-sm">
+                <div className="grid grid-cols-1 gap-4 text-base md:text-sm lg:grid-cols-2 xl:grid-cols-3">
                   {selectedAuthor.stories.map((story) => (
                     <a
                       key={story.link}
                       href={story.link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex flex-col justify-between p-4 border border-gray-200 rounded-lg bg-white hover:border-gray-300 hover:shadow-sm hover:-translate-y-0.5 transition-all group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500">
-                      <span className="text-blue-700 font-medium group-hover:underline line-clamp-2 mb-3 text-balance">
+                      className="group flex flex-col justify-between rounded-lg border border-gray-200 bg-white p-4 transition-all hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none"
+                    >
+                      <span className="mb-3 line-clamp-2 font-medium text-balance text-blue-700 group-hover:underline">
                         {story.title}
                       </span>
-                      <span className="self-end bg-gray-100 text-gray-700 border border-gray-200 px-2.5 py-1 rounded-full text-xs font-semibold tabular-nums">
+                      <span className="self-end rounded-full border border-gray-200 bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-700 tabular-nums">
                         {story.count}
                       </span>
                     </a>
@@ -594,24 +602,26 @@ export default function AuthorScrapeTab() {
             </>
           )}
         </div>
-        <footer className="bg-[#0d1117] border-t-2 border-purple-900/50 p-3 shrink-0 text-center font-mono text-xs z-10 w-full flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-4">
+        <footer className="z-10 flex w-full shrink-0 flex-col items-center justify-center gap-2 border-t-2 border-purple-900/50 bg-[#0d1117] p-3 text-center font-mono text-xs sm:flex-row sm:gap-4">
           <p className="text-gray-400">
-            Export saved stories for offline. Try{" "}
+            Export saved stories for offline. Try{' '}
             <a
               href="https://github.com/Jemeni11/TalesTrove"
               target="_blank"
               rel="noreferrer"
-              className="text-purple-400 font-bold hover:text-purple-300 underline underline-offset-4">
+              className="font-bold text-purple-400 underline underline-offset-4 hover:text-purple-300"
+            >
               TalesTrove
             </a>
           </p>
-          <span className="hidden sm:inline text-gray-700">|</span>
+          <span className="hidden text-gray-700 sm:inline">|</span>
           <a
             href="https://www.buymeacoffee.com/jemeni11"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-gray-400 font-bold hover:text-[#FFDD00] flex items-center gap-1.5 transition-colors group">
-            <BuyMeACoffeeIcon className="w-4 h-4 text-gray-400 group-hover:text-[#FFDD00]" />
+            className="group flex items-center gap-1.5 font-bold text-gray-400 transition-colors hover:text-[#FFDD00]"
+          >
+            <BuyMeACoffeeIcon className="h-4 w-4 text-gray-400 group-hover:text-[#FFDD00]" />
             Buy me a coffee
           </a>
         </footer>

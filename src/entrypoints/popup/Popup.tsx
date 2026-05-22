@@ -1,22 +1,21 @@
-import Radar from "@/components/Radar"
+import { useRef, useState } from 'react'
+
+import { storage } from '#imports'
+
+import Radar from '@/components/shared/Radar'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
-import { BuyMeACoffeeIcon, GitHubSponsorsIcon, LinkOutIcon } from "@/icons"
-import type { InputMethod, TalesTroveJSONType } from "@/types"
-import { isValidURL } from "@/utils"
-import { useRef, useState } from "react"
+} from '@/components/ui/popover'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { BuyMeACoffeeIcon, GitHubSponsorsIcon, LinkOutIcon } from '@/icons'
+import cn from '@/utils/cn'
+import { isValidURL } from '@/utils/url'
 
-import { Storage } from "@plasmohq/storage"
+import type { InputMethod, TalesTroveJSONType } from '@/types'
 
-import { cn } from "./lib/utils"
-
-import "./style.css"
-
-const storage = new Storage({ area: "local" })
+import '@/assets/tailwind.css'
 
 export default function Popup() {
   const [isUploading, setIsUploading] = useState(false)
@@ -26,11 +25,11 @@ export default function Popup() {
   const [success, setSuccess] = useState<string | null>(null)
 
   const [urlError, setUrlError] = useState<string | null>(null)
-  const [currentUrl, setCurrentUrl] = useState("")
+  const [currentUrl, setCurrentUrl] = useState('')
 
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null)
 
-  const [inputMethod, setInputMethod] = useState<InputMethod>("paste")
+  const [inputMethod, setInputMethod] = useState<InputMethod>('paste')
 
   const formRef = useRef<HTMLFormElement | null>(null)
 
@@ -38,14 +37,14 @@ export default function Popup() {
     const url = e.target.value
     setCurrentUrl(url)
 
-    if (url.trim() === "") {
+    if (url.trim() === '') {
       setUrlError(null)
       return
     }
 
     if (!isValidURL(url)) {
-      if (!url.startsWith("http")) {
-        setUrlError("URL must start with http:// or https://")
+      if (!url.startsWith('http')) {
+        setUrlError('URL must start with http:// or https://')
       } else {
         try {
           const hostname = new URL(url).hostname
@@ -53,7 +52,7 @@ export default function Popup() {
             `${hostname} is not supported. Only QuestionableQuesting, SpaceBattles, and SufficientVelocity are supported.`,
           )
         } catch {
-          setUrlError("Please enter a valid URL")
+          setUrlError('Please enter a valid URL')
         }
       }
     } else {
@@ -66,8 +65,8 @@ export default function Popup() {
   ) => {
     e.preventDefault()
 
-    await storage.remove("batchAuthorStories")
-    await storage.remove("singleAuthorURL")
+    await storage.removeItem('local:batchAuthorStories')
+    await storage.removeItem('local:singleAuthorURL')
 
     setError(null)
     setSuccess(null)
@@ -76,14 +75,14 @@ export default function Popup() {
 
     const form = formRef.current
     if (!form) {
-      throw new Error("Form not available")
+      throw new Error('Form not available')
     }
 
-    const fileInput = form.elements.namedItem("file") as HTMLInputElement | null
+    const fileInput = form.elements.namedItem('file') as HTMLInputElement | null
     const file = fileInput?.files?.[0] ?? null
 
-    if (!file || !["application/json", "text/plain"].includes(file.type)) {
-      setError("Please select a valid file.")
+    if (!file || !['application/json', 'text/plain'].includes(file.type)) {
+      setError('Please select a valid file.')
       return
     }
 
@@ -91,20 +90,20 @@ export default function Popup() {
       let stories: string | string[]
       const text = await file.text()
 
-      if (file.type === "application/json") {
+      if (file.type === 'application/json') {
         const parsed = JSON.parse(text)
 
         if (!Array.isArray(parsed)) {
-          throw new Error("Uploaded JSON file does not contain a valid array.")
+          throw new Error('Uploaded JSON file does not contain a valid array.')
         }
 
         const isValid = parsed.every(
           (item): item is TalesTroveJSONType =>
-            typeof item.authorLink === "string",
+            typeof item.authorLink === 'string',
         )
 
         if (!isValid) {
-          throw new Error("Uploaded JSON has invalid structure.")
+          throw new Error('Uploaded JSON has invalid structure.')
         }
 
         stories = parsed.map((parse) => parse.authorLink)
@@ -123,8 +122,8 @@ export default function Popup() {
           }
 
           // TalesTrove format: `Author Link: https://...`
-          else if (trimmed.startsWith("Author Link:")) {
-            const link = trimmed.replace("Author Link:", "").trim()
+          else if (trimmed.startsWith('Author Link:')) {
+            const link = trimmed.replace('Author Link:', '').trim()
             if (/^https?:\/\/\S+$/.test(link)) {
               links.push(link)
             }
@@ -132,25 +131,25 @@ export default function Popup() {
         }
 
         if (links.length === 0) {
-          throw new Error("No valid story links found in TXT file.")
+          throw new Error('No valid story links found in TXT file.')
         }
 
         stories = links
       }
 
-      await storage.set("batchAuthorStories", stories)
+      await storage.setItem<string[]>('local:batchAuthorStories', stories)
 
-      setSuccess("File processed successfully! Opening scanner...")
+      setSuccess('File processed successfully! Opening scanner...')
 
-      chrome.tabs.create({
-        url: chrome.runtime.getURL("./tabs/author-scrape.html"),
+      void browser.tabs.create({
+        url: browser.runtime.getURL('/author-scrape.html'),
       })
     } catch (err) {
-      console.error("File upload failed:", err)
+      console.error('File upload failed:', err)
       setError(
         err instanceof Error
           ? err.message
-          : "Invalid file format. Please upload a proper TalesTrove XenForo JSON or a TXT file.",
+          : 'Invalid file format. Please upload a proper TalesTrove XenForo JSON or a TXT file.',
       )
     }
 
@@ -160,8 +159,8 @@ export default function Popup() {
   const handleInputFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    await storage.remove("batchAuthorStories")
-    await storage.remove("singleAuthorURL")
+    await storage.removeItem('local:batchAuthorStories')
+    await storage.removeItem('local:singleAuthorURL')
 
     setError(null)
     setSuccess(null)
@@ -169,19 +168,19 @@ export default function Popup() {
 
     try {
       if (!isValidURL(currentUrl)) {
-        setError("Please enter a valid and supported URL.")
+        setError('Please enter a valid and supported URL.')
         return
       }
 
-      await storage.set("singleAuthorURL", currentUrl)
+      await storage.setItem<string>('local:singleAuthorURL', currentUrl)
 
-      setSuccess("Opening scanner...")
-      chrome.tabs.create({
-        url: chrome.runtime.getURL("./tabs/author-scrape.html"),
+      setSuccess('Opening scanner...')
+      void browser.tabs.create({
+        url: browser.runtime.getURL('/author-scrape.html'),
       })
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Something went wrong. Try again.",
+        err instanceof Error ? err.message : 'Something went wrong. Try again.',
       )
     } finally {
       setIsScanning(false)
@@ -189,65 +188,72 @@ export default function Popup() {
   }
 
   return (
-    <div className="w-full min-h-full [@media(pointer:fine)]:w-96 [@media(pointer:fine)]:min-h-[400px]">
-      <div className="w-full aspect-video flex justify-center items-center bg-[linear-gradient(90deg,#141142,#4143c7)]">
+    <div className="min-h-full w-full pointer-fine:min-h-100 pointer-fine:w-96">
+      <div className="flex aspect-video w-full items-center justify-center bg-[linear-gradient(90deg,#141142,#4143c7)]">
         <Radar />
       </div>
 
-      <div className="p-4 flex flex-col gap-8 bg-fr-3 h-full text-white">
-        <div className="w-full text-center my-2">
-          <h1 className="text-6xl font-bold mb-2">FicRadar</h1>
+      <div className="flex h-full flex-col gap-8 bg-fr-3 p-4 text-white">
+        <div className="my-2 w-full text-center">
+          <h1 className="mb-2 text-6xl font-bold">FicRadar</h1>
           <a
             href="https://github.com/Jemeni11/FicRadar"
             target="_blank"
             rel="noreferrer"
-            className="hover:text-fr-1 text-lg underline underline-offset-2">
+            className="text-lg underline underline-offset-2 hover:text-fr-1"
+          >
             Project Docs »
           </a>
         </div>
         <ToggleGroup
-          type="single"
-          className="border-fr-1 rounded-3xl p-1.5 flex w-full border border-solid"
-          value={inputMethod}
+          aria-label=""
+          className="flex w-full rounded-3xl border border-solid border-fr-1 p-1.5"
+          value={[inputMethod]}
           onValueChange={(value) => {
             if (value) {
-              setInputMethod(value as InputMethod)
+              setInputMethod(value[0] as InputMethod)
             }
-          }}>
+          }}
+        >
           <ToggleGroupItem
+            aria-label="Paste a Link"
             value="paste"
             className={cn(
-              inputMethod === "paste" && "rounded-3xl bg-fr-1",
-              "w-full text-center transition-colors",
-            )}>
+              inputMethod === 'paste' && 'rounded-3xl bg-fr-1',
+              'w-full flex-1 text-center transition-colors',
+            )}
+          >
             Paste a Link
           </ToggleGroupItem>
           <ToggleGroupItem
+            aria-label="Upload a File"
             value="file"
             className={cn(
-              inputMethod === "file" && "rounded-3xl bg-fr-1",
-              "w-full text-center transition-colors",
-            )}>
+              inputMethod === 'file' && 'rounded-3xl bg-fr-1',
+              'w-full flex-1 text-center transition-colors',
+            )}
+          >
             Upload a File
           </ToggleGroupItem>
         </ToggleGroup>
 
         {error && (
-          <div className="bg-red-900/50 border border-red-500 rounded-lg p-3 text-red-200">
+          <div className="rounded-lg border border-red-500 bg-red-900/50 p-3 text-red-200">
             {error}
           </div>
         )}
 
         {success && (
-          <div className="bg-green-900/50 border border-green-500 rounded-lg p-3 text-green-200">
+          <div className="rounded-lg border border-green-500 bg-green-900/50 p-3 text-green-200">
             {success}
           </div>
         )}
 
-        {inputMethod === "paste" ? (
+        {inputMethod === 'paste' ? (
           <form
             onSubmit={handleInputFormSubmit}
-            className="flex flex-col gap-4">
+            className="flex flex-col gap-4"
+          >
             <label htmlFor="url">
               <input
                 type="url"
@@ -256,39 +262,44 @@ export default function Popup() {
                 onChange={handleUrlChange}
                 placeholder="Enter author's profile URL"
                 className={cn(
-                  "mt-0.5 w-full rounded-3xl shadow-sm sm:text-sm bg-gray-900 text-white",
-                  urlError ? "border-red-500" : "border-fr-1",
+                  'mt-0.5 w-full rounded-3xl bg-gray-900 text-white shadow-sm sm:text-sm',
+                  urlError ? 'border-red-500' : 'border-fr-1',
                 )}
               />
             </label>
             {urlError && (
-              <p className="text-red-400 text-sm mt-1">{urlError}</p>
+              <p className="mt-1 text-sm text-red-400">{urlError}</p>
             )}
             <button
               type="submit"
               disabled={isScanning || !currentUrl.trim() || !!urlError}
-              className="w-full inline-flex justify-center items-center gap-2 rounded-3xl text-lg bg-fr-1 text-center py-1.5 disabled:opacity-50">
-              <span>{isScanning ? "Scanning..." : "Scan Link"}</span>
+              className="inline-flex w-full items-center justify-center gap-2 rounded-3xl bg-fr-1 py-1.5 text-center text-lg disabled:opacity-50"
+            >
+              <span>{isScanning ? 'Scanning...' : 'Scan Link'}</span>
               <LinkOutIcon className="size-4" />
             </button>
           </form>
         ) : (
           <div className="flex flex-col gap-4">
-            <div className="[@media(pointer:coarse)]:hidden">
+            <div className="pointer-coarse:hidden">
               <form
                 ref={formRef}
                 onSubmit={handleFileFormatSubmit}
-                className="flex flex-col gap-4">
-                <div className="inline-block text-center whitespace-normal flex-wrap">
+                className="flex flex-col gap-4"
+              >
+                <div className="inline-block flex-wrap text-center whitespace-normal">
                   <span className="text-sm text-gray-300">Upload a&nbsp;</span>
                   <Popover>
-                    <PopoverTrigger asChild>
-                      <span className="text-sm cursor-help text-fr-1 underline-offset-2 underline inline-block">
-                        supported file (JSON/TXT)
-                      </span>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-80 max-h-[320px] overflow-y-auto mx-8 bg-white text-sm space-y-4 rounded-sm shadow-md p-4 border border-gray-200">
-                      <h2 className="font-semibold text-xl text-gray-900">
+                    <PopoverTrigger
+                      render={
+                        <span className="inline-block cursor-help text-sm text-fr-1 underline underline-offset-2">
+                          supported file (JSON/TXT)
+                        </span>
+                      }
+                    />
+
+                    <PopoverContent className="mx-8 max-h-80 w-80 space-y-4 overflow-y-auto rounded-sm border border-gray-200 bg-white p-4 text-sm shadow-md">
+                      <h2 className="text-xl font-semibold text-gray-900">
                         Supported File Formats
                       </h2>
 
@@ -296,9 +307,9 @@ export default function Popup() {
                         <p>
                           <span className="font-medium text-gray-800">
                             JSON:
-                          </span>{" "}
-                          Should be a list of objects, each with an{" "}
-                          <code className="bg-gray-100 px-1 py-0.5 rounded text-[0.85em]">
+                          </span>{' '}
+                          Should be a list of objects, each with an{' '}
+                          <code className="rounded bg-gray-100 px-1 py-0.5 text-[0.85em]">
                             authorLink
                           </code>
                           .
@@ -307,18 +318,18 @@ export default function Popup() {
 
                       <div className="space-y-1">
                         <p className="font-medium text-gray-800">TXT:</p>
-                        <ul className="list-disc list-inside ml-2 space-y-1 text-gray-700">
+                        <ul className="ml-2 list-inside list-disc space-y-1 text-gray-700">
                           <li>
                             A plain author link, e.g.
                             <br />
-                            <code className="bg-gray-100 px-1 py-0.5 rounded text-[0.85em] break-words">
+                            <code className="rounded bg-gray-100 px-1 py-0.5 text-[0.85em] wrap-break-word">
                               https://forums.spacebattles.com/members/example.12345/
                             </code>
                           </li>
                           <li>
                             Or a line like:
                             <br />
-                            <code className="bg-gray-100 px-1 py-0.5 rounded text-[0.85em] break-words">
+                            <code className="rounded bg-gray-100 px-1 py-0.5 text-[0.85em] wrap-break-word">
                               Author Link:
                               https://forums.sufficientvelocity.com/members/example.12345/
                             </code>
@@ -327,12 +338,13 @@ export default function Popup() {
                       </div>
 
                       <p className="text-gray-700">
-                        If you're using{" "}
+                        If you're using{' '}
                         <a
                           href="https://github.com/Jemeni11/TalesTrove"
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-fr-1 underline font-medium">
+                          className="font-medium text-fr-1 underline"
+                        >
                           TalesTrove
                         </a>
                         , you're all set. Its JSON and main TXT format are fully
@@ -364,13 +376,14 @@ export default function Popup() {
                 />
 
                 <Popover>
-                  <PopoverTrigger asChild>
-                    <span className="text-base w-full text-center cursor-help text-yellow-600 font-medium">
-                      ⚠️ Caution
-                    </span>
-                  </PopoverTrigger>
-
-                  <PopoverContent className="w-80 mx-8 bg-white text-sm space-y-4 rounded-sm shadow-md p-4 border border-yellow-300">
+                  <PopoverTrigger
+                    render={
+                      <span className="w-full cursor-help text-center text-base font-medium text-yellow-600">
+                        ⚠️ Caution
+                      </span>
+                    }
+                  />
+                  <PopoverContent className="mx-8 w-80 space-y-4 rounded-sm border border-yellow-300 bg-white p-4 text-sm shadow-md">
                     <h2 className="text-base font-semibold text-yellow-800">
                       File upload may fail in some browsers
                     </h2>
@@ -387,17 +400,18 @@ export default function Popup() {
                     </p>
 
                     <button
-                      className="w-full inline-flex justify-center items-center gap-2 rounded-3xl text-base bg-fr-1 text-white text-center py-1.5 hover:bg-fr-2 transition-colors"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-3xl bg-fr-1 py-1.5 text-center text-base text-white transition-colors hover:bg-fr-2"
                       onClick={() => {
-                        chrome.tabs.create({
-                          url: chrome.runtime.getURL("tabs/file-upload.html"),
+                        void browser.tabs.create({
+                          url: browser.runtime.getURL('/file-upload.html'),
                         })
-                      }}>
+                      }}
+                    >
                       <span>Open Upload Page</span>
                       <LinkOutIcon className="size-4" />
                     </button>
 
-                    <small className="text-xs text-center w-full text-gray-500 mt-1 block [@media(pointer:coarse)]:block [@media(pointer:fine)]:hidden">
+                    <small className="mt-1 block w-full text-center text-xs text-gray-500 pointer-coarse:block pointer-fine:hidden">
                       Tab will open in background - close popup to view
                     </small>
                   </PopoverContent>
@@ -406,27 +420,29 @@ export default function Popup() {
                 <label
                   htmlFor="file"
                   className={cn(
-                    "w-full rounded-3xl text-lg text-center py-1.5 border-2 cursor-pointer transition-colors",
+                    'w-full cursor-pointer rounded-3xl border-2 py-1.5 text-center text-lg transition-colors',
                     isUploading
-                      ? "border-gray-500 text-gray-500 cursor-not-allowed"
-                      : "border-fr-1 text-fr-1 hover:bg-fr-1 hover:text-white",
-                  )}>
-                  {selectedFileName || "Choose File"}
+                      ? 'cursor-not-allowed border-gray-500 text-gray-500'
+                      : 'border-fr-1 text-fr-1 hover:bg-fr-1 hover:text-white',
+                  )}
+                >
+                  {selectedFileName || 'Choose File'}
                 </label>
 
                 <button
                   type="submit"
                   disabled={isUploading || !selectedFileName?.trim()}
-                  className="w-full inline-flex justify-center items-center gap-2 rounded-3xl text-lg bg-fr-1 text-center py-1.5 disabled:opacity-50">
-                  <span>{isUploading ? "Processing..." : "Upload & Scan"}</span>
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-3xl bg-fr-1 py-1.5 text-center text-lg disabled:opacity-50"
+                >
+                  <span>{isUploading ? 'Processing...' : 'Upload & Scan'}</span>
                   <LinkOutIcon className="size-4" />
                 </button>
               </form>
             </div>
 
-            <div className="[@media(pointer:fine)]:hidden space-y-4">
-              <div className="text-center space-y-2">
-                <p className="text-yellow-600 font-medium">
+            <div className="space-y-4 pointer-fine:hidden">
+              <div className="space-y-2 text-center">
+                <p className="font-medium text-yellow-600">
                   ⚠️ File uploads don't work reliably in mobile popups
                 </p>
                 <p className="text-sm text-gray-300">
@@ -436,12 +452,13 @@ export default function Popup() {
               </div>
 
               <button
-                className="w-full inline-flex justify-center items-center gap-2 rounded-3xl text-lg bg-fr-1 text-white text-center py-1.5 hover:bg-fr-2 transition-colors"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-3xl bg-fr-1 py-1.5 text-center text-lg text-white transition-colors hover:bg-fr-2"
                 onClick={() => {
-                  chrome.tabs.create({
-                    url: chrome.runtime.getURL("tabs/file-upload.html"),
+                  void browser.tabs.create({
+                    url: browser.runtime.getURL('/file-upload.html'),
                   })
-                }}>
+                }}
+              >
                 <span>Open Upload Page</span>
                 <LinkOutIcon className="size-4" />
               </button>
@@ -449,36 +466,39 @@ export default function Popup() {
           </div>
         )}
 
-        <small className="text-xs text-center w-full text-white block [@media(pointer:coarse)]:block [@media(pointer:fine)]:hidden">
+        <small className="block w-full text-center text-xs text-white pointer-coarse:block pointer-fine:hidden">
           Tab will open in background - close popup to view
         </small>
       </div>
 
-      <footer className="text-sm bg-fr-3 text-white text-center py-4 space-y-3">
+      <footer className="space-y-3 bg-fr-3 py-4 text-center text-sm text-white">
         <p>
-          Made with <span className="text-red-500">❤️</span> by{" "}
+          Made with <span className="text-red-500">❤️</span> by{' '}
           <a
             href="https://github.com/Jemeni11"
             target="_blank"
             rel="noreferrer"
-            className="text-fr-1 underline underline-offset-2 font-medium">
+            className="font-medium text-fr-1 underline underline-offset-2"
+          >
             Jemeni
           </a>
         </p>
 
-        <div className="flex w-full justify-center items-center gap-4">
+        <div className="flex w-full items-center justify-center gap-4">
           <span>Support me on: </span>
           <p className="flex justify-center gap-2">
             <a
               href="https://www.buymeacoffee.com/jemeni11"
               target="_blank"
-              rel="noopener noreferrer">
+              rel="noopener noreferrer"
+            >
               <BuyMeACoffeeIcon />
             </a>
             <a
               href="https://github.com/sponsors/Jemeni11"
               target="_blank"
-              rel="noopener noreferrer">
+              rel="noopener noreferrer"
+            >
               <GitHubSponsorsIcon />
             </a>
           </p>

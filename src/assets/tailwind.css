@@ -1,0 +1,57 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/forms';
+
+@layer base {
+  :root {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  p,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    overflow-wrap: break-word;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    text-wrap: balance;
+  }
+}
+
+@theme {
+  --color-fr-1: #4143c7;
+  --color-fr-2: #141142;
+  --color-fr-3: #121217;
+
+  --animate-spin-slow: spin 3s linear infinite;
+  --animate-ping-slow: ping 4s cubic-bezier(0, 0, 0.2, 1) infinite;
+
+  @keyframes ping-slow {
+    0% {
+      transform: scale(0.5);
+      opacity: 0.7;
+    }
+    70% {
+      transform: scale(2);
+      opacity: 0.3;
+    }
+    100% {
+      transform: scale(2.5);
+      opacity: 0;
+    }
+  }
+}

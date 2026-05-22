@@ -1,14 +1,13 @@
-import type { TalesTroveJSONType } from "@/types"
-import { useRef, useState } from "react"
+import { useRef, useState } from 'react'
 
-import { Storage } from "@plasmohq/storage"
+import { storage } from '#imports'
 
-import "../style.css"
+import { BuyMeACoffeeIcon, LinkOutIcon } from '@/icons'
 
-import { BuyMeACoffeeIcon, LinkOutIcon } from "@/icons"
-import { cn } from "@/lib/utils"
+import '@/assets/tailwind.css'
+import cn from '@/utils/cn'
 
-const storage = new Storage({ area: "local" })
+import type { TalesTroveJSONType } from '@/types'
 
 const parseTextToLinks = (text: string): string[] => {
   const lines = text.split(/\r?\n/)
@@ -20,8 +19,8 @@ const parseTextToLinks = (text: string): string[] => {
 
     if (/^https?:\/\/\S+$/.test(trimmed)) {
       links.push(trimmed)
-    } else if (trimmed.startsWith("Author Link:")) {
-      const link = trimmed.replace("Author Link:", "").trim()
+    } else if (trimmed.startsWith('Author Link:')) {
+      const link = trimmed.replace('Author Link:', '').trim()
       if (/^https?:\/\/\S+$/.test(link)) {
         links.push(link)
       }
@@ -44,12 +43,12 @@ export default function FileUploadTab() {
     setSuccess(null)
     setIsUploading(true)
 
-    await storage.remove("batchAuthorStories")
-    await storage.remove("singleAuthorURL")
+    await storage.removeItem('local:batchAuthorStories')
+    await storage.removeItem('local:singleAuthorURL')
 
     const file = fileInputRef.current?.files?.[0]
-    if (!file || !["application/json", "text/plain"].includes(file.type)) {
-      setError("Please select a valid JSON or TXT file.")
+    if (!file || !['application/json', 'text/plain'].includes(file.type)) {
+      setError('Please select a valid JSON or TXT file.')
       setIsUploading(false)
       return
     }
@@ -58,84 +57,84 @@ export default function FileUploadTab() {
       let links: string[]
       const text = await file.text()
 
-      if (file.type === "application/json") {
+      if (file.type === 'application/json') {
         const parsed = JSON.parse(text)
         if (!Array.isArray(parsed)) {
-          throw new Error("Uploaded JSON file is not an array.")
+          throw new Error('Uploaded JSON file is not an array.')
         }
         const isValid = parsed.every(
           (item): item is TalesTroveJSONType =>
-            typeof item.authorLink === "string",
+            typeof item.authorLink === 'string',
         )
-        if (!isValid) throw new Error("JSON structure is invalid.")
+        if (!isValid) throw new Error('JSON structure is invalid.')
         links = parsed.map((item) => item.authorLink)
       } else {
         links = parseTextToLinks(text)
         if (links.length === 0) {
-          throw new Error("No valid author links found in TXT file.")
+          throw new Error('No valid author links found in TXT file.')
         }
       }
 
-      await storage.set("batchAuthorStories", links)
-      setSuccess("File processed! Redirecting...")
+      await storage.setItem('local:batchAuthorStories', links)
+      setSuccess('File processed! Redirecting...')
 
       setTimeout(() => {
-        chrome.tabs.update({
-          url: chrome.runtime.getURL("tabs/author-scrape.html"),
+        void browser.tabs.update({
+          url: browser.runtime.getURL('/author-scrape.html'),
         })
       }, 1000)
     } catch (err) {
-      console.error("File upload error:", err)
+      console.error('File upload error:', err)
       setError(
-        err instanceof Error ? err.message : "Invalid file format or content.",
+        err instanceof Error ? err.message : 'Invalid file format or content.',
       )
       setIsUploading(false)
     }
   }
 
   return (
-    <div className="flex flex-col sm:flex-row sm:h-screen relative">
+    <div className="relative flex flex-col sm:h-screen sm:flex-row">
       {/* Sidebar */}
-      <aside className="size-full shrink-0 sm:w-64 bg-gray-50 border-r border-gray-200 flex flex-col">
-        <div className="sticky top-0 bg-gray-50 z-10 border-b pb-4">
-          <div className="p-4 font-bold text-lg border-b">Upload</div>
+      <aside className="flex size-full shrink-0 flex-col border-r border-gray-200 bg-gray-50 sm:w-64">
+        <div className="sticky top-0 z-10 border-b bg-gray-50 pb-4">
+          <div className="border-b p-4 text-lg font-bold">Upload</div>
 
           <div className="my-6 px-4 text-sm text-gray-600">
             Upload a file with XenForo author profile links.
           </div>
 
-          <div className="px-4 text-sm text-gray-700 space-y-6 pb-4">
+          <div className="space-y-6 px-4 pb-4 text-sm text-gray-700">
             <div className="space-y-3">
-              <h2 className="font-semibold text-gray-800 text-sm tracking-wide uppercase">
+              <h2 className="text-sm font-semibold tracking-wide text-gray-800 uppercase">
                 Supported File Types
               </h2>
 
-              <div className="bg-white border border-gray-200 rounded-md p-3 text-sm space-y-3">
+              <div className="space-y-3 rounded-md border border-gray-200 bg-white p-3 text-sm">
                 <div className="space-y-1">
                   <p className="font-medium text-gray-800">📄 JSON</p>
-                  <p className="text-gray-600 leading-snug text-[13px]">
-                    A list of objects, each with an{" "}
-                    <code className="bg-gray-100 px-1 py-0.5 rounded text-[0.85em]">
+                  <p className="text-[13px] leading-snug text-gray-600">
+                    A list of objects, each with an{' '}
+                    <code className="rounded bg-gray-100 px-1 py-0.5 text-[0.85em]">
                       authorLink
-                    </code>{" "}
+                    </code>{' '}
                     field.
                   </p>
                 </div>
 
                 <div className="space-y-1">
                   <p className="font-medium text-gray-800">📝 TXT</p>
-                  <ul className="space-y-1 pl-4 list-disc text-[13px] text-gray-600">
+                  <ul className="list-disc space-y-1 pl-4 text-[13px] text-gray-600">
                     <li>
                       Just the link:
                       <br />
-                      <code className="bg-gray-100 px-1 py-0.5 rounded text-[0.8em] break-words">
+                      <code className="rounded bg-gray-100 px-1 py-0.5 text-[0.8em] wrap-break-word">
                         https://forums.spacebattles.com/members/example.12345/
                       </code>
                     </li>
                     <li>
                       Or a line like:
                       <br />
-                      <code className="bg-gray-100 px-1 py-0.5 rounded text-[0.8em] break-words">
+                      <code className="rounded bg-gray-100 px-1 py-0.5 text-[0.8em] wrap-break-word">
                         Author Link:
                         https://forums.sufficientvelocity.com/members/example.12345/
                       </code>
@@ -145,9 +144,9 @@ export default function FileUploadTab() {
               </div>
             </div>
 
-            <div className="text-[12px] text-gray-500 leading-tight">
-              TalesTrove export formats are fully supported.{" "}
-              <span className="block mt-1">
+            <div className="text-[12px] leading-tight text-gray-500">
+              TalesTrove export formats are fully supported.{' '}
+              <span className="mt-1 block">
                 <strong>Note:</strong> story-only files (LinksOnlyTXT) won’t
                 work.
               </span>
@@ -157,13 +156,14 @@ export default function FileUploadTab() {
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <main className="flex-1 overflow-auto p-8 bg-white">
-          <h1 className="text-2xl font-bold mb-6">FicRadar File Upload</h1>
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <main className="flex-1 overflow-auto bg-white p-8">
+          <h1 className="mb-6 text-2xl font-bold">FicRadar File Upload</h1>
 
           <form
             onSubmit={handleFileSubmit}
-            className="space-y-4 w-full max-w-md">
+            className="w-full max-w-md space-y-4"
+          >
             {/* Hidden file input */}
             <input
               ref={fileInputRef}
@@ -181,46 +181,50 @@ export default function FileUploadTab() {
             <label
               htmlFor="file"
               className={cn(
-                "w-full block rounded-3xl text-lg text-center py-1.5 border-2 cursor-pointer transition-colors",
+                'block w-full cursor-pointer rounded-3xl border-2 py-1.5 text-center text-lg transition-colors',
                 isUploading
-                  ? "border-gray-500 text-gray-500 cursor-not-allowed"
-                  : "border-fr-1 text-fr-1 hover:bg-fr-1 hover:text-white",
-              )}>
-              {selectedFileName || "Choose File"}
+                  ? 'cursor-not-allowed border-gray-500 text-gray-500'
+                  : 'border-fr-1 text-fr-1 hover:bg-fr-1 hover:text-white',
+              )}
+            >
+              {selectedFileName || 'Choose File'}
             </label>
 
             {/* Feedback */}
-            {error && <div className="text-red-500 text-sm">{error}</div>}
-            {success && <div className="text-green-600 text-sm">{success}</div>}
+            {error && <div className="text-sm text-red-500">{error}</div>}
+            {success && <div className="text-sm text-green-600">{success}</div>}
 
             {/* Upload button */}
             <button
               type="submit"
               disabled={isUploading || !selectedFileName?.trim()}
-              className="w-full inline-flex justify-center items-center gap-2 rounded-3xl text-lg bg-fr-1 text-center py-1.5 disabled:opacity-50">
-              <span>{isUploading ? "Processing..." : "Upload & Scan"}</span>
+              className="inline-flex w-full items-center justify-center gap-2 rounded-3xl bg-fr-1 py-1.5 text-center text-lg disabled:opacity-50"
+            >
+              <span>{isUploading ? 'Processing...' : 'Upload & Scan'}</span>
               <LinkOutIcon className="size-4" />
             </button>
           </form>
         </main>
-        <footer className="bg-[#0d1117] border-t-2 border-purple-900/50 p-3 shrink-0 text-center font-mono text-xs z-10 w-full flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-4">
+        <footer className="z-10 flex w-full shrink-0 flex-col items-center justify-center gap-2 border-t-2 border-purple-900/50 bg-[#0d1117] p-3 text-center font-mono text-xs sm:flex-row sm:gap-4">
           <p className="text-gray-400">
-            Export saved stories for offline. Try{" "}
+            Export saved stories for offline. Try{' '}
             <a
               href="https://github.com/Jemeni11/TalesTrove"
               target="_blank"
               rel="noreferrer"
-              className="text-purple-400 font-bold hover:text-purple-300 underline underline-offset-4">
+              className="font-bold text-purple-400 underline underline-offset-4 hover:text-purple-300"
+            >
               TalesTrove
             </a>
           </p>
-          <span className="hidden sm:inline text-gray-700">|</span>
+          <span className="hidden text-gray-700 sm:inline">|</span>
           <a
             href="https://www.buymeacoffee.com/jemeni11"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-gray-400 font-bold hover:text-[#FFDD00] flex items-center gap-1.5 transition-colors group">
-            <BuyMeACoffeeIcon className="w-4 h-4 text-gray-400 group-hover:text-[#FFDD00]" />
+            className="group flex items-center gap-1.5 font-bold text-gray-400 transition-colors hover:text-[#FFDD00]"
+          >
+            <BuyMeACoffeeIcon className="h-4 w-4 text-gray-400 group-hover:text-[#FFDD00]" />
             Buy me a coffee
           </a>
         </footer>

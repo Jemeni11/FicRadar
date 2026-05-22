@@ -1,0 +1,36 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "semi": false,
+  "singleQuote": true,
+  "trailingComma": "all",
+  "printWidth": 80,
+  "sortPackageJson": false,
+  "sortTailwindcss": {
+    "functions": ["cn"],
+    "stylesheet": "./src/assets/tailwind.css"
+  },
+  "sortImports": {
+    "customGroups": [
+      {
+        "groupName": "react",
+        "elementNamePattern": ["react", "react-*", "react-*/*"]
+      },
+      {
+        "groupName": "wxt",
+        "elementNamePattern": ["wxt/*", "@wxt-dev/*", "wxt/*/*"]
+      }
+    ],
+    "groups": [
+      "react",
+      "wxt",
+      ["value-builtin", "value-external"],
+      "value-internal",
+      ["value-parent", "value-sibling", "value-index"],
+      "type-import",
+      "style",
+      "unknown"
+    ],
+    "newlinesBetween": true
+  },
+  "ignorePatterns": ["node_modules", "dist", "dist-ssr", ".output", ".wxt"]
+}

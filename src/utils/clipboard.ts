@@ -1,7 +1,7 @@
 function unsecuredCopyToClipboard(text: string): boolean {
-  const textArea = document.createElement("textarea")
+  const textArea = document.createElement('textarea')
   textArea.value = text
-  textArea.style.position = "fixed"
+  textArea.style.position = 'fixed'
   document.body.appendChild(textArea)
 
   textArea.focus()
@@ -9,13 +9,13 @@ function unsecuredCopyToClipboard(text: string): boolean {
 
   let successful = false
   try {
-    successful = document.execCommand("copy")
+    successful = document.execCommand('copy')
 
     if (!successful) {
-      console.error("Unsecured clipboard copy failed")
+      console.error('Unsecured clipboard copy failed')
     }
   } catch (err) {
-    console.error("Failed to copy content to clipboard", err)
+    console.error('Failed to copy content to clipboard', err)
   } finally {
     document.body.removeChild(textArea)
   }
@@ -27,7 +27,7 @@ export default function copyToClipboard(
   content: string,
   successMessage?: string,
 ): void {
-  const defaultMessage = "Copied to clipboard!"
+  const defaultMessage = 'Copied to clipboard!'
   const message = successMessage || defaultMessage
 
   if (window.isSecureContext && navigator?.clipboard?.writeText) {
@@ -37,7 +37,7 @@ export default function copyToClipboard(
         alert(`${message}\n${content}`)
       })
       .catch((err) => {
-        console.error("Failed to copy content to clipboard", err)
+        console.error('Failed to copy content to clipboard', err)
         alert(`Failed to copy to clipboard\nPlease try again`)
       })
   } else {
