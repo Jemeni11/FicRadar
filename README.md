@@ -8,8 +8,6 @@
 <h1 align="center">FicRadar</h1>
 
 <p align="center">
-    Fanfic recs without asking.  
-    <br />
     A browser extension for discovering the stories others love.
     <br /><br />
     <a href="https://github.com/Jemeni11/FicRadar"><strong>Explore the repo »</strong></a>
@@ -23,6 +21,7 @@
 - [Supported Sites](#supported-sites)
 - [Planned Support](#planned-support)
 - [Features](#features)
+- [How Recommendations Work](#how-recommendations-work)
 - [Installation](#installation)
   - [Browser Extension Stores](#browser-extension-stores)
   - [Firefox Compatibility Notes](#firefox-compatibility-notes)
@@ -33,6 +32,7 @@
     - [Production Build](#production-build)
 - [Usage](#usage)
   - [Supported Files](#supported-files)
+  - [Multi-Author Recommendations](#multi-author-recommendations)
   - [Example Workflows](#example-workflows)
     - [With fichub-cli](#with-fichub-cli)
     - [With FanFicFare](#with-fanficfare)
@@ -45,9 +45,18 @@
 
 ## Introduction
 
-**FicRadar** is a browser extension that extracts and ranks fanfiction links from user-visible forum posts and interactions. It helps you discover stories that people (especially your favorite authors) frequently interact with—by scraping and ranking their forum activity.
+**FicRadar** is a browser extension that extracts and ranks fanfiction links from visible forum activity.
 
-This project is built with [WXT](https://wxt.dev/) and before v2.0.0, [Plasmo](https://docs.plasmo.com/) was used.
+It helps you discover stories people (especially your favorite authors) keep reading, replying to, recommending, or talking about.
+
+You can use it to:
+
+- find what specific authors are reading
+- compare multiple authors and see overlapping stories
+- build recommendation lists from forum activity
+- export discovered stories into external tools
+
+This project is built with [WXT](https://wxt.dev/). Before v2.0.0, [Plasmo](https://docs.plasmo.com/) was used.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -57,26 +66,44 @@ This project is built with [WXT](https://wxt.dev/) and before v2.0.0, [Plasmo](h
 - **Sufficient Velocity**
 - **Questionable Questing**
 
-📝 _On these XenForo-based forums, FicRadar can rank links by how frequently they appear._
+📝 _On these XenForo-based forums, FicRadar can rank links by how frequently they appear and by how many authors interact with them._
 
 ## Planned Support
 
-- **Archive Of Our Own (AO3)** – Bookmarks, Subscriptions (ranking won’t apply here)
+- **Archive Of Our Own (AO3)** – Bookmarks, subscriptions (ranking won’t apply here)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Features
 
-- Scrapes story links from all user forum posts (except profile posts)
-- Counts and ranks by frequency (for forums, including older posts)
-- No tracking, no saved data—everything is ephemeral
+- Scrapes story links from forum activity
+- Counts and ranks repeated thread interactions
+- Combine multiple authors into a shared recommendation view
+- Prioritize stories seen across multiple authors
+- Detects and marks stories authored by the scanned author
+- Optional filtering for authored works
+- Optional local cache and scrape resume support for long-running scans
 - Export links in multiple formats:
   - JSON
   - CSV
   - TXT (links-only)
   - HTML
   - Browser-importable bookmarks
-- Clean and responsive UI
+- No tracking, no accounts, no backend service
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## How Recommendations Work
+
+FicRadar treats visible forum activity as recommendation evidence.
+
+If an author keeps posting in, replying to, or interacting with a thread, FicRadar treats that as a signal the story might be worth checking out.
+
+In single-author mode, stories are mainly ranked by repeated interactions.
+
+In multi-author mode, stories shared across multiple authors are ranked more highly than stories strongly associated with only one person.
+
+Likes are not used.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -93,7 +120,7 @@ This project is built with [WXT](https://wxt.dev/) and before v2.0.0, [Plasmo](h
 
 Minimum supported versions:
 
-> [!NOTE]  
+> [!NOTE]
 > The actual minimum Firefox version is 79. This is from the test run on addons.mozilla.org. The APIs used are supported from 54, but the manifest/package.json has keys that require 79+.
 
 - Firefox Desktop: 45 (March 2016)
@@ -118,7 +145,7 @@ _The APIs determine the minimum Android version._
    - `chrome-mv3-prod.zip` for Chromium browsers
    - `firefox-mv2-prod.zip` for Firefox
 
-3. Load it manually via your browser's developer tools.
+3. Load it manually via your browser’s developer tools.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -142,7 +169,7 @@ pnpm dev
 
 ##### Firefox for Android Development
 
-This is slightly more complicated so I'll just link to the [official guide](https://extensionworkshop.com/documentation/develop/developing-extensions-for-firefox-for-android/).
+This is slightly more complicated, so here’s the [official guide](https://extensionworkshop.com/documentation/develop/developing-extensions-for-firefox-for-android/).
 
 #### Production Build
 
@@ -163,15 +190,23 @@ Then load the resulting build folder as an unpacked extension.
 
 1. Navigate to a supported user profile page and copy the URL.
 2. Click the FicRadar icon.
-3. Paste the URL or, upload a supported file. See the [supported files](#supported-files) section for more info.
-4. The extension will open a new tab and scrape the author's forum activity for fanfiction links.
+3. Paste the URL or upload a supported file. See the [supported files](#supported-files) section for more info.
+4. The extension will open a new tab and scrape the author’s forum activity for fanfiction links.
 5. Export the results in your preferred format.
 
 ### Supported Files
 
 - [TalesTrove](https://www.github.com/Jemeni11/TalesTrove) TXT (Regular. LinksOnlyTXT isn't supported) and JSON
-- TXT file with line breaks separating each link, or with lines like: `Author Link: https://...`
-- JSON files with a `authorLink` field.
+- TXT files with line breaks separating each link, or lines like: `Author Link: https://...`
+- JSON files with an `authorLink` field
+
+### Multi-Author Recommendations
+
+You can upload multiple author profiles or files to build a shared recommendation pool.
+
+Instead of treating each author separately, FicRadar combines their activity and surfaces stories that repeatedly appear across those authors.
+
+This is especially useful for finding stories that keep showing up across authors you already follow.
 
 ### Example Workflows
 
@@ -193,14 +228,40 @@ fanficfare -i stoleThunderNotLightning_stories.txt
 
 ## FAQ
 
-**Do you store my data?**  
-Yes. Only on your own device. The extension uses the browser’s local storage to transfer data between components (from the popup to the open tab). Your data isn't sent anywhere else. You can open the network tab on the new tab page to confirm. FicRadar doesn’t track, save, or upload anything.
+**Do you store my data?**
 
-**Why do I need to be logged in?**  
-Because some platforms (like QQ on some pages and AO3) require login to access subscription data. You could try without it. It could work. This hasn't been tested.
+Only locally on your own device.
 
-**Isn't this shady?**  
-I don't think so. All this data is already publicly available. This extension just automates a process anyone could carry out manually. If you don't want your interactions on XenForo forums to be publicly visible, you can just hide your profile. This extension can’t get around that.
+FicRadar uses browser storage to pass data between extension pages and optionally cache scrape results for resume/retry support.
+
+Nothing is uploaded anywhere else.
+
+There’s no backend service, no accounts, and no tracking.
+
+**Why do I need to be logged in?**
+
+Some platforms require login to access user activity or subscription data.
+
+For example:
+
+- Questionable Questing may restrict some pages to logged-in users
+- AO3 subscriptions and bookmarks may require login access
+
+Some pages may still work without logging in, but this is not guaranteed.
+
+**Why are some stories marked as authored works?**
+
+Some XenForo search pages include both stories an author reads and stories they wrote themselves.
+
+FicRadar can detect authored works separately so they can be marked, filtered, or exported independently.
+
+**Isn’t this shady?**
+
+I don’t think so.
+
+All this data is already publicly visible to people who can access the relevant forum pages. FicRadar just automates collecting and ranking it.
+
+If you don’t want your forum activity visible, most forums already let you hide your profile or restrict access. FicRadar doesn’t bypass that.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -212,7 +273,9 @@ Pull requests welcome! Bug reports, feature requests, or docs help are all appre
 
 ## Why did I build this?
 
-I like fanfiction. And I really like knowing what my favourite authors are reading. FicRadar is a way to see what stories they keep reading, commenting or talking about.
+I like fanfiction. And I really like knowing what my favourite authors are reading. The idea behind FicRadar was: “if they write good stories, they probably read good stories.”
+
+So FicRadar became a way to see what stories people keep reading, commenting on, or talking about.
 
 Also, I’ve built other tools in this space like [FicImage](https://github.com/Jemeni11/FicImage), [TalesTrove](https://github.com/Jemeni11/TalesTrove) and contributed to [WebToEpub](https://github.com/dteviot/WebToEpub) and [Leech.py](https://github.com/kemayo/leech).
 
