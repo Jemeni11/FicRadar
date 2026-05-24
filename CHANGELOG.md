@@ -13,9 +13,111 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [//]: # '- **Fixed** for any bug fixes.'
 [//]: # '- **Security** in case of vulnerabilities.'
 
-## [Unreleased]
+## [2.0.0] — Unreleased
 
-- Nil
+### Added
+
+- Authored story detection: each scrape now runs two parallel requests —
+  one for threads started by the author, one for all interactions. Results
+  are annotated with an `isAuthor` flag.
+- `getUserStoriesOnly` parameter on `getXenForoData` and all three site
+  adapters; when true, matches `[href$="&content=thread"]` instead of the
+  general member search selector.
+- `isAuthor: boolean` field on `StoryResult` type; initialised to `false`
+  in `collectPaginatedResults`.
+- Dual progress display during scraping: separate "Authored Works" and
+  "Forum Search" progress bars.
+- Filter toolbar in story results: All / Discovered / Authored tabs and a
+  title search input.
+- `AuthoredBadge` (pen icon) shown on authored stories in list and grid views.
+- Authored story count in the results summary line.
+- Empty state when no stories match the active filters.
+- `motion-safe:` guard on Radar sweep animation.
+- `role="alert"` / `role="status"` on popup error and success banners.
+- `role="tablist"`, `role="tab"`, `role="tabpanel"` on popup input switcher.
+- `role="radiogroup"` / `role="radio"` on story filter tabs.
+- `sr-only` label, `aria-invalid`, `aria-describedby` on URL input.
+- `aria-label` on sidebar mobile toggle button.
+- `aria-hidden` on decorative SVGs.
+- `pnpm-workspace.yaml` with `allowBuilds` and `trustPolicy` settings.
+- `oxlint`, `oxfmt`, `oxlint-tsgolint` for linting and formatting.
+- `husky` + `lint-staged` pre-commit hook running oxlint and oxfmt.
+- Config files: `.oxfmtrc.json`, `.oxlintrc.json`, `.lintstagedrc.json`,
+  `.husky/pre-commit`.
+- `babel-plugin-react-compiler` for React Compiler support.
+- `@base-ui/react` replacing all Radix UI dependencies.
+- `@tailwindcss/vite` plugin.
+- `wxt.config.ts` replacing the `manifest` block in `package.json`.
+- `src/utils/helpers.ts`, `src/utils/url.ts`, `src/utils/cn.ts`,
+  `src/utils/export.ts`, `src/utils/clipboard.ts` consolidating ~10
+  scattered utility files.
+- `src/adapters/xenforo/{index,getDocument,collectPaginatedResults}.ts`
+  splitting the monolithic xenforo adapter.
+- `docs/` directory; `POLICY.md` and `webstores-info.txt` moved here.
+
+### Changed
+
+- **BREAKING**: Framework migrated from Plasmo to WXT. Storage keys,
+  entry point paths, and build output structure have changed.
+- **BREAKING**: `@plasmohq/storage` replaced by WXT storage (`#imports`).
+- **BREAKING**: `chrome.*` APIs replaced by `browser.*` (WXT cross-browser
+  shim).
+- Entry points restructured from `src/popup.tsx` + `src/tabs/*` to
+  `src/entrypoints/{popup,author-scrape,file-upload}/` with
+  `index.html` + `main.tsx` per entrypoint.
+- React 18.2 → 19.2. TypeScript 5.3 → 5.9.
+- Tailwind CSS 3.4 → 4.3. `tailwind.config.js` and `postcss.config.js`
+  removed; config now lives in `src/assets/tailwind.css` via `@import`.
+- `@radix-ui/react-popover`, `@radix-ui/react-toggle`,
+  `@radix-ui/react-toggle-group` replaced by `@base-ui/react`.
+  `popover.tsx`, `toggle.tsx`, `toggle-group.tsx` updated accordingly.
+- Prettier replaced by `oxfmt`; `@ianvs/prettier-plugin-sort-imports`
+  replaced by oxfmt's built-in `sortImports`. `.prettierrc.mjs` removed.
+- `tsconfig.json` updated to extend `.wxt/tsconfig.json`.
+- `assets/icon.png` moved to `public/icon.png`.
+- `src/components/Radar.tsx` and `ExportButton.tsx` moved to
+  `src/components/shared/`.
+- `src/lib/utils.ts` (cn helper) moved to `src/utils/cn.ts`.
+- Popup header: aspect-video gradient hero replaced with a compact flex
+  strip containing the Radar icon and title.
+- Popup tab switcher: `ToggleGroup`/`ToggleGroupItem` (Radix) replaced with
+  a native `tablist` and CSS sliding pill indicator.
+- File upload caution `Popover` (Radix) replaced with inline hint text and
+  a plain button link.
+- `Radar` component now fills its container (`size-full`) instead of
+  `min-h-40 w-40`.
+- Grid cards for authored stories use `border-purple-200 bg-purple-50/30`.
+- `logsEndRef` scroll logic moved into `ScrapeProgress`.
+- `viewMode` state moved into `StoryResults`.
+- `handleGlobalExport` import moved from the parent entrypoint into
+  `AuthorSidebar`.
+
+### Removed
+
+- Plasmo (`0.90.5`) and all `@plasmohq/*` packages.
+- `@radix-ui/react-popover`, `@radix-ui/react-toggle`,
+  `@radix-ui/react-toggle-group`.
+- Prettier, `@ianvs/prettier-plugin-sort-imports`, `postcss`,
+  `@types/chrome`.
+- `tailwind.config.js`, `postcss.config.js`, `src/style.css`.
+- `.prettierrc.mjs`.
+- `src/adapters/xenforo.ts` (replaced by the split module).
+- `src/utils/index.ts` and all individual utility files it re-exported.
+- `src/lib/utils.ts`.
+- `src/popup.tsx`, `src/popup.html`, `src/tabs/author-scrape.tsx`,
+  `src/tabs/file-upload.tsx` (replaced by entrypoints structure).
+- Manifest `host_permissions` and gecko settings from `package.json`
+  (moved to `wxt.config.ts`).
+
+### Refactored
+
+- `Popup.tsx` split into `PopupHeader`, `PopupFooter`, `UrlInputForm`,
+  `FileUploadForm`.
+- `author-scrape.tsx` split into `AuthorSidebar`, `ScrapeProgress`,
+  `StoryResults`.
+- `src/adapters/xenforo.ts` split into `index.ts`, `getDocument.ts`,
+  `collectPaginatedResults.ts`.
+- `toggleVariants` extracted to `src/components/ui/toggleVariants.ts`.
 
 ## [1.2.0] - 2026-03-03
 
