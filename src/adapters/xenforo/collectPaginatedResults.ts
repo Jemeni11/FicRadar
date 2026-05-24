@@ -141,7 +141,12 @@ async function collectPaginatedResults(
         if (existingStoryResult) {
           existingStoryResult.count++
         } else {
-          const newStoryResult: StoryResult = { title, link: href, count: 1, isAuthor: false }
+          const newStoryResult: StoryResult = {
+            title,
+            link: href,
+            count: 1,
+            isAuthor: false,
+          }
           storyData.push(newStoryResult)
         }
       })

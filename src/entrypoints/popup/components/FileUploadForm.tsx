@@ -126,7 +126,7 @@ export default function FileUploadForm({
           onSubmit={handleSubmit}
           className="flex flex-col gap-3"
         >
-          <p className="text-center text-sm text-gray-300 text-pretty">
+          <p className="text-center text-sm text-pretty text-gray-300">
             Upload a JSON or TXT file with author profile links.{' '}
             <a
               href="https://github.com/Jemeni11/TalesTrove"
@@ -175,7 +175,7 @@ export default function FileUploadForm({
             <LinkOutIcon className="size-4" />
           </button>
 
-          <p className="text-center text-xs text-gray-400 text-pretty">
+          <p className="text-center text-xs text-pretty text-gray-400">
             Upload not working?{' '}
             <button
               type="button"
@@ -195,14 +195,14 @@ export default function FileUploadForm({
 
       {/* Mobile fallback — file uploads don't work reliably in mobile popups */}
       <div className="space-y-3 pointer-fine:hidden">
-        <p className="text-center text-sm text-gray-300 text-pretty">
+        <p className="text-center text-sm text-pretty text-gray-300">
           File uploads don't work reliably in mobile popups. Use the full upload
           page instead.
         </p>
 
         <button
           type="button"
-          className="inline-flex w-full items-center justify-center gap-2 rounded-3xl bg-fr-1 py-1.5 text-center text-lg text-white transition-colors active:scale-[0.97] hover:bg-fr-2"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-3xl bg-fr-1 py-1.5 text-center text-lg text-white transition-colors hover:bg-fr-2 active:scale-[0.97]"
           onClick={() => {
             void browser.tabs.create({
               url: browser.runtime.getURL('/file-upload.html'),

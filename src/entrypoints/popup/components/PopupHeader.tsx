@@ -6,7 +6,7 @@ export default function PopupHeader() {
       <div className="size-14 shrink-0">
         <Radar />
       </div>
-      <h1 className="text-2xl font-bold text-white text-balance">FicRadar</h1>
+      <h1 className="text-2xl font-bold text-balance text-white">FicRadar</h1>
     </header>
   )
 }

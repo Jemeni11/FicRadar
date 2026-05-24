@@ -136,8 +136,7 @@ export default function ScrapeProgress({
                 className="h-full origin-left bg-purple-500 transition-transform duration-300 ease-out"
                 style={{
                   transform: `scaleX(${
-                    progressData.page /
-                    Math.max(progressData.totalPages, 1)
+                    progressData.page / Math.max(progressData.totalPages, 1)
                   })`,
                 }}
               />
