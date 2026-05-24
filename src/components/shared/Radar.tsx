@@ -1,6 +1,6 @@
 export default function Radar() {
   return (
-    <div className="relative min-h-40 w-40">
+    <div className="relative size-full">
       {/* Static SVG Radar Base */}
       <svg
         className="absolute top-0 left-0 h-full w-full"
@@ -68,7 +68,7 @@ export default function Radar() {
       </svg>
 
       {/* Sweep effect */}
-      <div className="pointer-events-none absolute top-0 left-0 h-full w-full animate-spin-slow rounded-full mask-[radial-gradient(circle_at_center,black_90%,transparent_100%)] [background:conic-gradient(rgba(64,67,186,0.4)_0deg,rgba(64,67,186,0.1)_30deg,transparent_60deg,transparent_360deg)]" />
+      <div className="pointer-events-none absolute top-0 left-0 h-full w-full motion-safe:animate-spin-slow rounded-full mask-[radial-gradient(circle_at_center,black_90%,transparent_100%)] [background:conic-gradient(rgba(64,67,186,0.4)_0deg,rgba(64,67,186,0.1)_30deg,transparent_60deg,transparent_360deg)]" />
     </div>
   )
 }
