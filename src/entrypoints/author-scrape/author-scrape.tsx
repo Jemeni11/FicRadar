@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { storage } from '#imports'
 
@@ -18,7 +18,6 @@ import {
   TXTIcon,
 } from '@/icons'
 import {
-  handleGlobalExport,
   saveBookmarkHTMLFile,
   saveCSVFile,
   saveHTMLFile,
@@ -27,6 +26,10 @@ import {
 } from '@/utils/export'
 import { delay, sortByCountDescending } from '@/utils/helpers'
 import { extractUsername } from '@/utils/url'
+
+import AuthorSidebar from './components/AuthorSidebar'
+import ScrapeProgress from './components/ScrapeProgress'
+import StoryResults from './components/StoryResults'
 
 import '@/assets/tailwind.css'
 
@@ -42,19 +45,32 @@ const scrapeAuthor = async (
   id: SupportedSites,
   url: string,
   progressCallback: (progress: ProgressData) => void,
+  getUserStoriesOnly: boolean = false,
 ): Promise<StoryResult[]> => {
   try {
     let data: StoryResult[] = []
 
     switch (id) {
       case 'QuestionableQuesting':
-        data = await getQuestionableQuestingData(url, progressCallback)
+        data = await getQuestionableQuestingData(
+          url,
+          progressCallback,
+          getUserStoriesOnly,
+        )
         break
       case 'SpaceBattles':
-        data = await getSpaceBattlesData(url, progressCallback)
+        data = await getSpaceBattlesData(
+          url,
+          progressCallback,
+          getUserStoriesOnly,
+        )
         break
       case 'SufficientVelocity':
-        data = await getSufficientVelocityData(url, progressCallback)
+        data = await getSufficientVelocityData(
+          url,
+          progressCallback,
+          getUserStoriesOnly,
+        )
         break
     }
 
@@ -68,6 +84,11 @@ const scrapeAuthor = async (
 export default function AuthorScrapeTab() {
   const [authors, setAuthors] = useState<AuthorStatus[]>([])
   const [selectedAuthorIndex, setSelectedAuthorIndex] = useState(0)
+  const [authorProgressData, setAuthorProgressData] = useState<ProgressData>({
+    page: 0,
+    totalPages: 0,
+    found: 0,
+  })
   const [progressData, setProgressData] = useState<ProgressData>({
     page: 0,
     totalPages: 0,
@@ -75,14 +96,7 @@ export default function AuthorScrapeTab() {
   })
   const [hasStartedScraping, setHasStartedScraping] = useState(false)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
   const [logs, setLogs] = useState<LogEntry[]>([])
-
-  const logsEndRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    logsEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [logs])
 
   const updateStatus = (
     index: number,
@@ -123,24 +137,48 @@ export default function AuthorScrapeTab() {
         }
 
         // Reset progress for this author
+        setAuthorProgressData({ page: 0, totalPages: 0, found: 0 })
         setProgressData({ page: 0, totalPages: 0, found: 0 })
         setLogs([])
 
-        const data = await scrapeAuthor(id, author.url, (progress) => {
-          if (progress.page !== -1) {
-            setProgressData({
-              page: progress.page,
-              totalPages: progress.totalPages,
-              found: progress.found,
-            })
-          }
-          if (progress.logEntry) {
-            setLogs((prev) => [...prev, progress.logEntry!])
-          }
-        })
+        const [authorData, data] = await Promise.all([
+          scrapeAuthor(
+            id,
+            author.url,
+            (progress) => {
+              if (progress.page !== -1) {
+                setAuthorProgressData({
+                  page: progress.page,
+                  totalPages: progress.totalPages,
+                  found: progress.found,
+                })
+              }
+            },
+            true,
+          ),
+          scrapeAuthor(id, author.url, (progress) => {
+            if (progress.page !== -1) {
+              setProgressData({
+                page: progress.page,
+                totalPages: progress.totalPages,
+                found: progress.found,
+              })
+            }
+            if (progress.logEntry) {
+              setLogs((prev) => [...prev, progress.logEntry!])
+            }
+          }),
+        ])
 
-        if (data) {
-          updateStatus(i, 'success', sortByCountDescending(data))
+        if (data.length) {
+          const authorLinks = new Set(
+            authorData.map((s) => s.link.replace(/\/$/, '')),
+          )
+          const mutatedData = data.map((datum) => ({
+            ...datum,
+            isAuthor: authorLinks.has(datum.link.replace(/\/$/, '')),
+          }))
+          updateStatus(i, 'success', sortByCountDescending(mutatedData))
           console.log(
             `Successfully scraped ${data.length} stories for ${author.name}`,
           )
@@ -248,113 +286,18 @@ export default function AuthorScrapeTab() {
 
   return (
     <div className="relative flex h-screen">
-      {/* Mobile toggle button */}
-      <button
-        className="fixed top-4 left-4 z-30 rounded-md bg-gray-800 p-2 text-white min-[450px]:hidden"
-        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-      >
-        <svg
-          className="h-5 w-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M4 6h16M4 12h16M4 18h16"
-          />
-        </svg>
-      </button>
+      <AuthorSidebar
+        authors={authors}
+        selectedAuthorIndex={selectedAuthorIndex}
+        completedCount={completedCount}
+        isSidebarOpen={isSidebarOpen}
+        onSelectAuthor={setSelectedAuthorIndex}
+        onCloseSidebar={() => setIsSidebarOpen(false)}
+        onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+      />
 
-      {/* Mobile overlay */}
-      {isSidebarOpen && (
-        <div
-          className="bg-opacity-50 fixed inset-0 z-20 bg-black min-[450px]:hidden"
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      )}
-
-      <aside
-        className={` ${isSidebarOpen ? 'visible translate-x-0' : 'invisible -translate-x-full min-[450px]:visible'} fixed z-30 flex h-full flex-col border-r border-gray-200 bg-gray-50 transition-transform duration-300 ease-in-out min-[450px]:relative min-[450px]:translate-x-0 ${isSidebarOpen ? 'w-full min-[450px]:w-64' : 'w-0 min-[450px]:w-64'} `}
-      >
-        <div className="sticky top-0 z-10 w-full space-y-4 border-b bg-gray-50 pb-4">
-          <button
-            className="mx-[5%] my-2 w-[90%] rounded-md bg-red-700 px-4 py-2 text-xl font-bold text-white min-[450px]:hidden"
-            type="button"
-            onClick={() => setIsSidebarOpen(false)}
-          >
-            Close Sidebar
-          </button>
-          <div className="border-b p-4 text-lg font-bold">Authors</div>
-          <div className="my-8 px-4 text-sm text-gray-600">
-            Progress: {completedCount}/{authors.length}
-            <div className="my-2 h-2 w-full rounded bg-gray-200">
-              <div
-                className="h-full rounded bg-purple-500 transition-all duration-300"
-                style={{
-                  width: `${(completedCount / authors.length) * 100}%`,
-                }}
-              />
-            </div>
-          </div>
-          {completedCount === authors.length && authors.length > 1 && (
-            <div className="mb-6 px-4">
-              <label className="mb-1 block text-sm font-medium text-gray-700">
-                Export All Stories
-              </label>
-              <select
-                className="w-full rounded border bg-white px-3 py-2 text-sm"
-                onChange={(e) => {
-                  const format = e.target.value
-                  if (!format) return
-                  handleGlobalExport(authors, format)
-                }}
-              >
-                <option value="">Select format</option>
-                <option value="txt">Download All as TXT</option>
-                <option value="json">Download All as JSON</option>
-                <option value="csv">Download All as CSV</option>
-                <option value="html">Download All as HTML</option>
-                <option value="bookmark">Download All as Bookmark HTML</option>
-              </select>
-            </div>
-          )}
-        </div>
-        <ul className="flex-1 overflow-auto">
-          {authors.map((author, idx) => (
-            <li
-              key={author.url}
-              className={`flex cursor-pointer items-center justify-between border-b p-3 text-sm transition hover:bg-gray-200 ${
-                idx === selectedAuthorIndex ? 'bg-purple-100 font-semibold' : ''
-              }`}
-              onClick={() => {
-                setSelectedAuthorIndex(idx)
-                if (window.innerWidth < 450) {
-                  setIsSidebarOpen(false)
-                }
-              }}
-            >
-              <span>{author.name}</span>
-              <span className="text-xs text-gray-500">
-                {author.status === 'queued' && '🟡 Not started'}
-                {author.status === 'pending' && '⏳ Loading'}
-                {author.status === 'success' &&
-                  `${author.stories.length} stories`}
-                {author.status === 'error' && '❌'}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </aside>
-
-      <main
-        className={`flex h-screen flex-1 flex-col overflow-hidden transition-all duration-300 ${
-          isSidebarOpen ? 'ml-16 min-[450px]:ml-0' : 'ml-16 min-[450px]:ml-0'
-        }`}
-      >
-        <div className="flex-1 overflow-y-auto px-8 py-4 min-[450px]:px-8 min-[450px]:py-8">
+      <main className="flex h-screen flex-1 flex-col overflow-hidden transition-all duration-300">
+        <div className="flex-1 overflow-y-auto px-4 pt-14 pb-4 min-[450px]:p-8">
           <div className="block max-w-full">
             <h1 className="mb-4 text-2xl font-bold break-all">
               <a
@@ -430,69 +373,12 @@ export default function AuthorScrapeTab() {
           )}
 
           {selectedAuthor?.status === 'pending' && (
-            <>
-              <div className="mb-4 animate-pulse text-gray-500">
-                Scraping in progress…
-              </div>
-
-              <div className="mb-4 text-sm text-gray-600">
-                Page Progress: {progressData.page}/{progressData.totalPages}
-                <div className="my-2 h-2 w-full rounded border border-gray-300 bg-gray-200">
-                  <div
-                    className="h-full rounded bg-purple-500 transition-all duration-300"
-                    style={{
-                      width: `${(progressData.page / Math.max(progressData.totalPages, 1)) * 100}%`,
-                    }}
-                  />
-                </div>
-                <small>Found {progressData.found} unique thread(s)</small>
-              </div>
-
-              <div className="my-6 flex h-64 flex-col overflow-hidden rounded-md border border-gray-800 bg-[#0d1117] font-mono text-xs text-gray-300 shadow-inner">
-                <div className="flex items-center border-b border-gray-700 bg-gray-800 px-3 py-1.5 text-[10px] font-bold text-gray-400 uppercase select-none">
-                  <span>logs — {selectedAuthor.name}</span>
-                </div>
-                <div className="flex flex-1 flex-col overflow-y-auto p-3 font-mono leading-relaxed [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-700 [&::-webkit-scrollbar-track]:bg-[#0d1117]">
-                  {logs.length === 0 && (
-                    <div className="text-gray-600 italic">
-                      Waiting for logs…
-                    </div>
-                  )}
-                  {logs.map((log, i) => (
-                    <div
-                      key={i}
-                      className="-mx-1 mb-2 flex flex-col rounded px-1 hover:bg-[#161b22] lg:mb-1 lg:flex-row lg:items-start lg:gap-3"
-                    >
-                      <div className="flex shrink-0 gap-3 select-none">
-                        <span className="text-gray-500">
-                          {new Date(log.timestamp)
-                            .toISOString()
-                            .split('T')[1]
-                            .replace('Z', '')}
-                        </span>
-                        <span
-                          className={`w-12 font-bold uppercase ${
-                            log.level === 'error'
-                              ? 'text-red-400'
-                              : log.level === 'warn'
-                                ? 'text-yellow-400'
-                                : log.level === 'info'
-                                  ? 'text-blue-400'
-                                  : 'text-green-400'
-                          }`}
-                        >
-                          {log.level}
-                        </span>
-                      </div>
-                      <span className="mt-1 flex-1 wrap-break-word whitespace-pre-wrap text-gray-300 lg:mt-0">
-                        {log.message}
-                      </span>
-                    </div>
-                  ))}
-                  <div ref={logsEndRef} />
-                </div>
-              </div>
-            </>
+            <ScrapeProgress
+              authorName={selectedAuthor.name}
+              authorProgressData={authorProgressData}
+              progressData={progressData}
+              logs={logs}
+            />
           )}
 
           {selectedAuthor?.status === 'error' && (
@@ -502,104 +388,10 @@ export default function AuthorScrapeTab() {
           )}
 
           {selectedAuthor?.status === 'success' && (
-            <>
-              <div className="mb-4 flex items-center justify-between">
-                <p className="text-gray-600">
-                  {selectedAuthor.stories.length} stories found:
-                </p>
-
-                <div className="flex rounded-md bg-gray-200 p-0.5">
-                  <button
-                    type="button"
-                    aria-label="List View"
-                    onClick={() => setViewMode('list')}
-                    className={`rounded-sm p-1.5 transition-colors focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none ${
-                      viewMode === 'list'
-                        ? 'bg-white font-medium text-purple-700 shadow-sm'
-                        : 'text-gray-500 hover:bg-gray-300 hover:text-gray-800'
-                    }`}
-                  >
-                    <svg
-                      className="h-4 w-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4 6h16M4 12h16M4 18h16"
-                      />
-                    </svg>
-                  </button>
-                  <button
-                    type="button"
-                    aria-label="Grid View"
-                    onClick={() => setViewMode('grid')}
-                    className={`rounded-sm p-1.5 transition-colors focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none ${
-                      viewMode === 'grid'
-                        ? 'bg-white font-medium text-purple-700 shadow-sm'
-                        : 'text-gray-500 hover:bg-gray-300 hover:text-gray-800'
-                    }`}
-                  >
-                    <svg
-                      className="h-4 w-4"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M4 6h4v4H4V6zm12 0h4v4h-4V6zM4 14h4v4H4v-4zm12 0h4v4h-4v-4z" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-
-              {viewMode === 'list' ? (
-                <div
-                  className="flex flex-col gap-1 text-base md:text-sm"
-                  style={{ contentVisibility: 'auto' }}
-                >
-                  {selectedAuthor.stories.map((story, idx) => (
-                    <a
-                      key={story.link}
-                      href={story.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="group flex items-center justify-between rounded-md p-2 transition-colors hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none"
-                    >
-                      <span className="mr-3 w-6 shrink-0 text-right font-medium text-gray-400 tabular-nums lg:w-8">
-                        {idx + 1}.
-                      </span>
-                      <span className="mr-4 min-w-0 flex-1 truncate text-blue-700 group-hover:underline">
-                        {story.title}
-                      </span>
-                      <span className="shrink-0 rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-gray-700 tabular-nums">
-                        {story.count}
-                      </span>
-                    </a>
-                  ))}
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 gap-4 text-base md:text-sm lg:grid-cols-2 xl:grid-cols-3">
-                  {selectedAuthor.stories.map((story) => (
-                    <a
-                      key={story.link}
-                      href={story.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="group flex flex-col justify-between rounded-lg border border-gray-200 bg-white p-4 transition-all hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none"
-                    >
-                      <span className="mb-3 line-clamp-2 font-medium text-balance text-blue-700 group-hover:underline">
-                        {story.title}
-                      </span>
-                      <span className="self-end rounded-full border border-gray-200 bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-700 tabular-nums">
-                        {story.count}
-                      </span>
-                    </a>
-                  ))}
-                </div>
-              )}
-            </>
+            <StoryResults
+              stories={selectedAuthor.stories}
+              authorName={selectedAuthor.name}
+            />
           )}
         </div>
         <footer className="z-10 flex w-full shrink-0 flex-col items-center justify-center gap-2 border-t-2 border-purple-900/50 bg-[#0d1117] p-3 text-center font-mono text-xs sm:flex-row sm:gap-4">
