@@ -11,6 +11,7 @@ async function getXenForoData(
   baseURL: string,
   userUrl: string,
   progressCallback: (progress: ProgressData) => void,
+  getUserStoriesOnly?: boolean,
 ): Promise<StoryResult[]> {
   const data: StoryResult[] = []
 
@@ -22,7 +23,9 @@ async function getXenForoData(
     const profileDoc = await getDocument(firstLink, baseURL, adapterName)
 
     const link = profileDoc.querySelector(
-      'a.menu-linkRow[href^="/search/member?user_id="]',
+      getUserStoriesOnly
+        ? 'a.menu-linkRow[href^="/search/member?user_id="][href$="&content=thread"]'
+        : 'a.menu-linkRow[href^="/search/member?user_id="]',
     ) as HTMLAnchorElement | null
 
     if (!link) {

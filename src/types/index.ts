@@ -38,6 +38,7 @@ export type StoryResult = {
   title: string
   link: string
   count: number
+  isAuthor: boolean
 }
 
 export type FileFormat = 'json' | 'txt' | 'csv' | 'html' | 'bookmarksHtml'
