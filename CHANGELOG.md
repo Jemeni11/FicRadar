@@ -54,6 +54,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `src/adapters/xenforo/{index,getDocument,collectPaginatedResults}.ts`
   splitting the monolithic xenforo adapter.
 - `docs/` directory; `POLICY.md` and `webstores-info.txt` moved here.
+- Custom `Geist` font, new surface/accent/muted theme tokens, global `focus-visible` styling, and reduced-motion handling in `tailwind.css`.
+- Profile search-link discovery for XenForo so authored-story URLs can be detected more reliably.
+- New popup accessibility and UI polish: tab semantics, alert/status icons, improved input labels, and clearer file-upload copy.
+- Refreshed author-scrape sidebar/footer styling and behavior for the new theme.
 
 ### Changed
 
@@ -91,6 +95,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `viewMode` state moved into `StoryResults`.
 - `handleGlobalExport` import moved from the parent entrypoint into
   `AuthorSidebar`.
+- XenForo scraping now resolves profile search links through `discoverProfileSearchLinks` instead of a fixed selector.
+- Popup and upload controls were restyled for the new dark theme and improved keyboard/focus behavior.
+- Author-scrape layout spacing and footer styling were updated to match the refreshed visual system.
+- `BuyMeACoffeeIcon` and `GitHubSponsorsIcon` now rely on external sizing/color classes instead of fixed inline styling.
 
 ### Removed
 

@@ -126,13 +126,13 @@ export default function FileUploadForm({
           onSubmit={handleSubmit}
           className="flex flex-col gap-3"
         >
-          <p className="text-center text-sm text-pretty text-gray-300">
+          <p className="text-center text-sm text-pretty text-fr-muted">
             Upload a JSON or TXT file with author profile links.{' '}
             <a
               href="https://github.com/Jemeni11/TalesTrove"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-fr-1 underline underline-offset-2"
+              className="text-fr-accent underline underline-offset-2 transition-[color] duration-150 hover:text-white"
             >
               TalesTrove
             </a>{' '}
@@ -145,7 +145,8 @@ export default function FileUploadForm({
             type="file"
             accept="application/json,text/plain"
             disabled={isUploading}
-            className="hidden"
+            aria-label="Select a JSON or TXT file"
+            className="peer sr-only"
             onChange={(e) => {
               const file = e.target.files?.[0]
               if (file) {
@@ -157,29 +158,40 @@ export default function FileUploadForm({
           <label
             htmlFor="file"
             className={cn(
-              'w-full cursor-pointer rounded-3xl border-2 py-1.5 text-center text-lg transition-colors',
+              'flex min-h-11 w-full cursor-pointer items-center justify-center rounded-3xl border-2 text-center text-base font-medium',
+              'transition-[color,background-color,border-color] duration-150 ease-out',
+              'peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-fr-accent',
               isUploading
-                ? 'cursor-not-allowed border-gray-500 text-gray-500'
-                : 'border-fr-1 text-fr-1 hover:bg-fr-1 hover:text-white',
+                ? 'cursor-not-allowed border-white/10 text-fr-muted'
+                : 'border-fr-accent/50 text-fr-accent hover:border-fr-accent hover:bg-fr-accent/10',
             )}
           >
-            {selectedFileName || 'Select File'}
+            <span className={cn(selectedFileName && 'truncate px-3')}>
+              {selectedFileName || 'Select File'}
+            </span>
           </label>
 
           <button
             type="submit"
             disabled={isUploading || !selectedFileName?.trim()}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-3xl bg-fr-1 py-1.5 text-center text-lg active:scale-[0.97] disabled:opacity-50"
+            aria-busy={isUploading}
+            className={cn(
+              'inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-3xl bg-fr-1 text-center text-base font-medium text-white',
+              'transition-[transform,background-color] duration-150 ease-out',
+              'hover:bg-fr-accent',
+              'active:scale-[0.97]',
+              'disabled:pointer-events-none disabled:opacity-50',
+            )}
           >
             <span>{isUploading ? 'Processing…' : 'Upload & Scan'}</span>
             <LinkOutIcon className="size-4" />
           </button>
 
-          <p className="text-center text-xs text-pretty text-gray-400">
+          <p className="text-center text-xs text-pretty text-fr-muted">
             Upload not working?{' '}
             <button
               type="button"
-              className="text-fr-1 underline underline-offset-2"
+              className="text-fr-accent underline underline-offset-2 transition-[color] duration-150 hover:text-white"
               onClick={() => {
                 void browser.tabs.create({
                   url: browser.runtime.getURL('/file-upload.html'),
@@ -195,14 +207,19 @@ export default function FileUploadForm({
 
       {/* Mobile fallback — file uploads don't work reliably in mobile popups */}
       <div className="space-y-3 pointer-fine:hidden">
-        <p className="text-center text-sm text-pretty text-gray-300">
+        <p className="text-center text-sm text-pretty text-fr-muted">
           File uploads don't work reliably in mobile popups. Use the full upload
           page instead.
         </p>
 
         <button
           type="button"
-          className="inline-flex w-full items-center justify-center gap-2 rounded-3xl bg-fr-1 py-1.5 text-center text-lg text-white transition-colors hover:bg-fr-2 active:scale-[0.97]"
+          className={cn(
+            'inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-3xl bg-fr-1 text-center text-base font-medium text-white',
+            'transition-[transform,background-color] duration-150 ease-out',
+            'hover:bg-fr-accent',
+            'active:scale-[0.97]',
+          )}
           onClick={() => {
             void browser.tabs.create({
               url: browser.runtime.getURL('/file-upload.html'),

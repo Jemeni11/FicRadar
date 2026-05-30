@@ -297,7 +297,7 @@ export default function AuthorScrapeTab() {
       />
 
       <main className="flex h-screen flex-1 flex-col overflow-hidden transition-all duration-300">
-        <div className="flex-1 overflow-y-auto px-4 pt-14 pb-4 min-[450px]:p-8">
+        <div className="flex-1 overflow-y-auto px-4 pt-18 pb-4 min-[450px]:p-8">
           <div className="block max-w-full">
             <h1 className="mb-4 text-2xl font-bold break-all">
               <a
@@ -394,7 +394,7 @@ export default function AuthorScrapeTab() {
             />
           )}
         </div>
-        <footer className="z-10 flex w-full shrink-0 flex-col items-center justify-center gap-2 border-t-2 border-purple-900/50 bg-[#0d1117] p-3 text-center font-mono text-xs sm:flex-row sm:gap-4">
+        <footer className="z-10 flex w-full shrink-0 flex-col items-center justify-center gap-2 bg-fr-surface p-3 text-center font-mono text-xs sm:flex-row sm:gap-4">
           <p className="text-gray-400">
             Export saved stories for offline. Try{' '}
             <a

@@ -2,6 +2,7 @@ import { customError } from '@/utils/helpers'
 import { withDomain } from '@/utils/url'
 
 import collectPaginatedResults from './collectPaginatedResults'
+import discoverProfileSearchLinks from './discoverProfileSearchLinks'
 import getDocument from './getDocument'
 
 import type { ProgressData, StoryResult } from '@/types'
@@ -22,17 +23,14 @@ async function getXenForoData(
 
     const profileDoc = await getDocument(firstLink, baseURL, adapterName)
 
-    const link = profileDoc.querySelector(
-      getUserStoriesOnly
-        ? 'a.menu-linkRow[href^="/search/member?user_id="][href$="&content=thread"]'
-        : 'a.menu-linkRow[href^="/search/member?user_id="]',
-    ) as HTMLAnchorElement | null
+    const searchLinks = discoverProfileSearchLinks(profileDoc, baseURL)
+    const pageUrl = getUserStoriesOnly
+      ? (searchLinks.authoredStoriesUrl ?? searchLinks.authoredThreadsUrl)
+      : searchLinks.allContentUrl
 
-    if (!link) {
+    if (!pageUrl) {
       customError(adapterName, 'Could not find user content link')
     }
-
-    const pageUrl = link.href
 
     await collectPaginatedResults(
       adapterName,

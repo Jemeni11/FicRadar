@@ -113,7 +113,7 @@ export const BuyMeACoffeeIcon = (props: SVGProps<SVGSVGElement>) => (
     width={24}
     height={24}
     viewBox="0 0 24 24"
-    className="size-5 text-white hover:cursor-pointer hover:text-[#FFDD00]"
+    className="size-5"
     {...props}
   >
     <title>Buy Me a Coffee</title>
@@ -130,7 +130,7 @@ export const GitHubSponsorsIcon = (props: SVGProps<SVGSVGElement>) => (
     width={24}
     height={24}
     viewBox="0 0 24 24"
-    className="size-5 text-white hover:cursor-pointer hover:text-[#EA4AAA]"
+    className="size-5"
     {...props}
   >
     <title>GitHub Sponsors</title>
@@ -140,3 +140,68 @@ export const GitHubSponsorsIcon = (props: SVGProps<SVGSVGElement>) => (
     ></path>
   </svg>
 )
+
+export function AlertCircleIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="1em"
+      height="1em"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      {...props}
+    >
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="8" x2="12" y2="12" />
+      <line x1="12" y1="16" x2="12.01" y2="16" />
+    </svg>
+  )
+}
+
+export function CheckCircleIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="1em"
+      height="1em"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      {...props}
+    >
+      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+      <polyline points="22 4 12 14.01 9 11.01" />
+    </svg>
+  )
+}
+
+export function InfoIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="1em"
+      height="1em"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      {...props}
+    >
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="16" x2="12" y2="12" />
+      <line x1="12" y1="8" x2="12.01" y2="8" />
+    </svg>
+  )
+}

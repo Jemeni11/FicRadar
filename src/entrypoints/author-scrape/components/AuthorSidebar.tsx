@@ -26,7 +26,11 @@ export default function AuthorSidebar({
     <>
       {/* Mobile toggle button */}
       <button
-        className="fixed top-4 left-4 z-30 rounded-md bg-gray-800 p-2 text-white min-[450px]:hidden"
+        className={cn(
+          'fixed top-4 left-4 z-30 flex size-10 items-center justify-center rounded-lg border border-white/10 bg-fr-surface text-fr-muted shadow-sm min-[450px]:hidden',
+          'transition-[color,background-color,border-color] duration-150 ease-out',
+          'hover:bg-white/5 hover:text-white focus-visible:ring-2 focus-visible:ring-fr-accent focus-visible:ring-offset-2 focus-visible:ring-offset-fr-3 focus-visible:outline-none',
+        )}
         onClick={onToggleSidebar}
         aria-label="Toggle sidebar"
       >
@@ -49,82 +53,142 @@ export default function AuthorSidebar({
       {/* Mobile overlay */}
       {isSidebarOpen && (
         <div
-          className="bg-opacity-50 fixed inset-0 z-20 bg-black min-[450px]:hidden"
+          className="fixed inset-0 z-20 bg-black/60 backdrop-blur-sm transition-opacity duration-300 min-[450px]:hidden"
           onClick={onCloseSidebar}
+          aria-hidden="true"
         />
       )}
 
       <aside
-        className={` ${isSidebarOpen ? 'visible translate-x-0' : 'invisible -translate-x-full min-[450px]:visible'} fixed z-30 flex h-full flex-col border-r border-gray-200 bg-gray-50 transition-transform duration-300 ease-in-out min-[450px]:relative min-[450px]:translate-x-0 ${isSidebarOpen ? 'w-full min-[450px]:w-64' : 'w-0 min-[450px]:w-64'} `}
+        className={cn(
+          'fixed top-0 left-0 z-30 flex h-full flex-col bg-fr-surface shadow-2xl transition-all duration-300 ease-out min-[450px]:relative min-[450px]:translate-x-0 min-[450px]:shadow-none',
+          isSidebarOpen
+            ? 'visible w-80 translate-x-0 min-[450px]:w-72'
+            : 'invisible w-80 -translate-x-full min-[450px]:visible min-[450px]:w-72',
+        )}
       >
-        <div className="sticky top-0 z-10 w-full space-y-4 border-b bg-gray-50 pb-4">
+        <div className="sticky top-0 z-10 flex w-full flex-col gap-4 border-b border-white/5 bg-fr-surface/95 p-4 backdrop-blur-md">
           <button
-            className="mx-[5%] my-2 w-[90%] rounded-md bg-red-700 px-4 py-2 text-xl font-bold text-white min-[450px]:hidden"
+            className={cn(
+              'flex min-h-11 w-full items-center justify-center rounded-lg border border-white/10 bg-white/5 text-sm font-medium text-white min-[450px]:hidden',
+              'transition-[background-color,border-color] duration-150 ease-out',
+              'hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-fr-accent focus-visible:outline-none',
+            )}
             type="button"
             onClick={onCloseSidebar}
           >
             Close Sidebar
           </button>
-          <div className="border-b p-4 text-lg font-bold">Authors</div>
-          <div className="my-8 px-4 text-sm text-gray-600">
-            Progress: {completedCount}/{authors.length}
-            <div className="my-2 h-2 w-full rounded bg-gray-200">
+
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold tracking-tight text-white">
+              Authors
+            </h2>
+            <span className="rounded-md bg-white/5 px-2 py-1 text-xs font-medium text-fr-muted">
+              {completedCount} / {authors.length}
+            </span>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
               <div
-                className="h-full rounded bg-purple-500 transition-all duration-300"
+                className="h-full rounded-full bg-fr-accent transition-all duration-500 ease-out"
                 style={{
-                  width: `${(completedCount / authors.length) * 100}%`,
+                  width: `${authors.length > 0 ? (completedCount / authors.length) * 100 : 0}%`,
                 }}
               />
             </div>
           </div>
+
           {completedCount === authors.length && authors.length > 1 && (
-            <div className="mb-6 px-4">
-              <label className="mb-1 block text-sm font-medium text-gray-700">
+            <div className="flex flex-col gap-1.5 pt-2">
+              <label className="text-xs font-medium text-fr-muted">
                 Export All Stories
               </label>
               <select
-                className="w-full rounded border bg-white px-3 py-2 text-sm"
+                className={cn(
+                  'w-full cursor-pointer appearance-none rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white',
+                  'transition-[border-color,background-color] duration-150 ease-out',
+                  'hover:border-white/20 focus-visible:border-fr-accent focus-visible:ring-1 focus-visible:ring-fr-accent focus-visible:outline-none',
+                )}
                 onChange={(e) => {
                   const format = e.target.value
                   if (!format) return
                   handleGlobalExport(authors, format)
+                  // Reset select
+                  e.target.value = ''
                 }}
               >
-                <option value="">Select format</option>
-                <option value="txt">Download All as TXT</option>
-                <option value="json">Download All as JSON</option>
-                <option value="csv">Download All as CSV</option>
-                <option value="html">Download All as HTML</option>
-                <option value="bookmark">Download All as Bookmark HTML</option>
+                <option value="" className="bg-fr-surface">
+                  Select format…
+                </option>
+                <option value="txt" className="bg-fr-surface">
+                  Download All as TXT
+                </option>
+                <option value="json" className="bg-fr-surface">
+                  Download All as JSON
+                </option>
+                <option value="csv" className="bg-fr-surface">
+                  Download All as CSV
+                </option>
+                <option value="html" className="bg-fr-surface">
+                  Download All as HTML
+                </option>
+                <option value="bookmark" className="bg-fr-surface">
+                  Download All as Bookmark HTML
+                </option>
               </select>
             </div>
           )}
         </div>
-        <ul className="flex-1 overflow-auto">
-          {authors.map((author, idx) => (
-            <li
-              key={author.url}
-              className={cn(
-                'flex cursor-pointer items-center justify-between border-b p-3 text-sm transition hover:bg-gray-200',
-                idx === selectedAuthorIndex && 'bg-purple-100 font-semibold',
-              )}
-              onClick={() => {
-                onSelectAuthor(idx)
-                if (window.innerWidth < 450) {
-                  onCloseSidebar()
-                }
-              }}
-            >
-              <span>{author.name}</span>
-              <span className="text-xs text-gray-500">
-                {author.status === 'queued' && '🟡 Not started'}
-                {author.status === 'pending' && '⏳ Loading'}
-                {author.status === 'success' &&
-                  `${author.stories.length} stories`}
-                {author.status === 'error' && '❌'}
-              </span>
-            </li>
-          ))}
+
+        <ul className="flex-1 overflow-x-hidden overflow-y-auto p-2">
+          {authors.map((author, idx) => {
+            const isSelected = idx === selectedAuthorIndex
+            return (
+              <li key={author.url} className="mb-1 last:mb-0">
+                <button
+                  type="button"
+                  className={cn(
+                    'flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors duration-150 ease-out',
+                    isSelected
+                      ? 'bg-fr-accent/15 font-medium text-fr-accent'
+                      : 'text-fr-muted hover:bg-white/5 hover:text-white',
+                    'focus-visible:ring-2 focus-visible:ring-fr-accent focus-visible:outline-none focus-visible:ring-inset',
+                  )}
+                  onClick={() => {
+                    onSelectAuthor(idx)
+                    if (window.innerWidth < 450) {
+                      onCloseSidebar()
+                    }
+                  }}
+                  aria-selected={isSelected}
+                  role="option"
+                >
+                  <span className="truncate">{author.name}</span>
+                  <span
+                    className={cn(
+                      'shrink-0 text-xs',
+                      isSelected ? 'text-fr-accent/80' : 'text-fr-muted/70',
+                    )}
+                  >
+                    {author.status === 'queued' && 'Not started'}
+                    {author.status === 'pending' && (
+                      <span className="flex items-center gap-1.5">
+                        <span className="size-1.5 animate-pulse rounded-full bg-fr-accent" />
+                        Scraping
+                      </span>
+                    )}
+                    {author.status === 'success' &&
+                      `${author.stories.length} found`}
+                    {author.status === 'error' && (
+                      <span className="text-red-400">Error</span>
+                    )}
+                  </span>
+                </button>
+              </li>
+            )
+          })}
         </ul>
       </aside>
     </>

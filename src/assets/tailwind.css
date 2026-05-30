@@ -1,11 +1,27 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/forms';
 
+@font-face {
+  font-family: 'Geist';
+  src: url('./fonts/GeistVF.woff2') format('woff2');
+  font-weight: 100 900;
+  font-display: swap;
+}
+
 @layer base {
   :root {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    touch-action: manipulation;
+  }
+
+  body {
+    font-family:
+      'Geist',
+      system-ui,
+      -apple-system,
+      sans-serif;
   }
 
   p,
@@ -30,12 +46,31 @@
   h6 {
     text-wrap: balance;
   }
+
+  /* Focus ring utility — used on all interactive elements */
+  :focus-visible {
+    outline: 2px solid var(--color-fr-accent);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
 }
 
 @theme {
   --color-fr-1: #4143c7;
   --color-fr-2: #141142;
   --color-fr-3: #121217;
+  --color-fr-accent: #7b7ef0;
+  --color-fr-surface: #1a1a24;
+  --color-fr-muted: #8b8ca0;
 
   --animate-spin-slow: spin 3s linear infinite;
   --animate-ping-slow: ping 4s cubic-bezier(0, 0, 0.2, 1) infinite;

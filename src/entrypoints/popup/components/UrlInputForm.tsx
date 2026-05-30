@@ -84,14 +84,19 @@ export default function UrlInputForm({
         <input
           type="url"
           id="url"
+          name="url"
+          autoComplete="url"
+          spellCheck={false}
           value={currentUrl}
           onChange={handleUrlChange}
-          placeholder="Paste an author's profile URL"
+          placeholder="Paste an author's profile URL…"
           aria-invalid={urlError ? true : undefined}
           aria-describedby={urlError ? 'url-error' : undefined}
           className={cn(
-            'mt-0.5 w-full rounded-3xl bg-gray-900 text-white shadow-sm sm:text-sm',
-            urlError ? 'border-red-500' : 'border-fr-1',
+            'mt-0.5 w-full rounded-3xl bg-fr-surface text-sm text-white shadow-sm',
+            'placeholder:text-fr-muted',
+            'border',
+            urlError ? 'border-red-400/50' : 'border-white/10',
           )}
         />
       </label>
@@ -103,7 +108,14 @@ export default function UrlInputForm({
       <button
         type="submit"
         disabled={isScanning || !currentUrl.trim() || !!urlError}
-        className="inline-flex w-full items-center justify-center gap-2 rounded-3xl bg-fr-1 py-1.5 text-center text-lg active:scale-[0.97] disabled:opacity-50"
+        aria-busy={isScanning}
+        className={cn(
+          'inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-3xl bg-fr-1 text-center text-base font-medium text-white',
+          'transition-[transform,background-color] duration-150 ease-out',
+          'hover:bg-fr-accent',
+          'active:scale-[0.97]',
+          'disabled:pointer-events-none disabled:opacity-50',
+        )}
       >
         <span>{isScanning ? 'Scanning…' : 'Scan Link'}</span>
         <LinkOutIcon className="size-4" />

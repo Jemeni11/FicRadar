@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 
+import { AlertCircleIcon, CheckCircleIcon, InfoIcon } from '@/icons'
 import cn from '@/utils/cn'
 
 import FileUploadForm from './components/FileUploadForm'
@@ -12,9 +13,11 @@ import type { InputMethod } from '@/types'
 import '@/assets/tailwind.css'
 
 const TABS = [
-  { value: 'paste' as const, label: 'Paste a Link' },
-  { value: 'file' as const, label: 'Upload a File' },
+  { value: 'paste' as const, label: 'Paste a Link', id: 'tab-paste' },
+  { value: 'file' as const, label: 'Upload a File', id: 'tab-file' },
 ]
+
+const PANEL_ID = 'input-panel'
 
 export default function Popup() {
   const [inputMethod, setInputMethod] = useState<InputMethod>('paste')
@@ -22,16 +25,36 @@ export default function Popup() {
   const [success, setSuccess] = useState<string | null>(null)
 
   const activeIndex = TABS.findIndex((t) => t.value === inputMethod)
+  const activeTab = TABS[activeIndex]
+
+  const handleTabKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLButtonElement>) => {
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        e.preventDefault()
+        const nextIndex =
+          e.key === 'ArrowRight'
+            ? (activeIndex + 1) % TABS.length
+            : (activeIndex - 1 + TABS.length) % TABS.length
+        const nextTab = TABS[nextIndex]
+        setInputMethod(nextTab.value)
+
+        const nextButton = document.getElementById(nextTab.id)
+        nextButton?.focus()
+      }
+    },
+    [activeIndex],
+  )
 
   return (
     <div className="min-h-full w-full pointer-fine:w-96">
       <PopupHeader />
 
-      <main className="flex flex-col gap-3 bg-fr-3 px-4 py-3 text-white">
+      <main className="flex flex-col gap-3 bg-fr-3 px-4 py-4 text-white">
+        {/* Tab switcher */}
         <div
           role="tablist"
           aria-label="Choose input method"
-          className="relative flex w-full rounded-3xl border border-solid border-fr-1 p-1.5"
+          className="relative flex w-full rounded-3xl border border-solid border-white/10 bg-fr-surface p-1.5"
         >
           {/* Sliding indicator */}
           <div
@@ -45,11 +68,22 @@ export default function Popup() {
           {TABS.map((tab) => (
             <button
               key={tab.value}
+              id={tab.id}
               type="button"
               role="tab"
               aria-selected={inputMethod === tab.value}
-              className="relative z-10 w-full flex-1 text-center text-sm active:scale-[0.97]"
+              aria-controls={PANEL_ID}
+              tabIndex={inputMethod === tab.value ? 0 : -1}
+              className={cn(
+                'relative z-10 min-h-11 w-full flex-1 rounded-[18px] text-center text-sm font-medium',
+                'transition-[color,opacity] duration-150 ease-out',
+                'active:scale-[0.97]',
+                inputMethod === tab.value
+                  ? 'text-white'
+                  : 'text-fr-muted hover:text-white/80',
+              )}
               onClick={() => setInputMethod(tab.value)}
+              onKeyDown={handleTabKeyDown}
             >
               {tab.label}
             </button>
@@ -59,26 +93,39 @@ export default function Popup() {
         {error && (
           <div
             role="alert"
-            className="rounded-lg border border-red-500 bg-red-900/50 p-3 text-sm text-red-200"
+            aria-live="assertive"
+            className="flex items-start gap-2 rounded-lg border border-red-400/30 bg-red-950/50 p-3 text-sm text-red-300"
           >
-            {error}
+            <AlertCircleIcon className="mt-0.5 size-4 shrink-0" />
+            <span>{error}</span>
           </div>
         )}
 
         {success && (
           <div
             role="status"
-            className="rounded-lg border border-green-500 bg-green-900/50 p-3 text-sm text-green-200"
+            aria-live="polite"
+            className="flex items-start gap-2 rounded-lg border border-emerald-400/30 bg-emerald-950/50 p-3 text-sm text-emerald-300"
           >
-            {success}
+            <CheckCircleIcon className="mt-0.5 size-4 shrink-0" />
+            <span>{success}</span>
           </div>
         )}
 
-        <small className="block w-full text-center text-xs text-white pointer-coarse:block pointer-fine:hidden">
-          Tab will open in background — close popup to view
-        </small>
+        {/* Mobile-only context notice */}
+        <div className="hidden items-center justify-center gap-1.5 rounded-lg bg-fr-surface px-3 py-2 pointer-coarse:flex pointer-fine:hidden">
+          <InfoIcon className="size-3.5 shrink-0 text-fr-muted" />
+          <p className="text-xs text-fr-muted">
+            Tab opens in background — close popup to view
+          </p>
+        </div>
 
-        <div role="tabpanel">
+        <div
+          id={PANEL_ID}
+          role="tabpanel"
+          aria-labelledby={activeTab.id}
+          tabIndex={0}
+        >
           {inputMethod === 'paste' ? (
             <UrlInputForm setError={setError} setSuccess={setSuccess} />
           ) : (
