@@ -7,6 +7,8 @@ import getDocument from './getDocument'
 
 import type { ProgressData, StoryResult } from '@/types'
 
+const isDev = import.meta.env.DEV
+
 async function getXenForoData(
   adapterName: string,
   baseURL: string,
@@ -19,7 +21,7 @@ async function getXenForoData(
   try {
     const firstLink = withDomain(baseURL, userUrl)
 
-    console.log('🔍 Scraping started for:', firstLink)
+    if (isDev) console.log('🔍 Scraping started for:', firstLink)
 
     const profileDoc = await getDocument(firstLink, baseURL, adapterName)
 
@@ -40,10 +42,16 @@ async function getXenForoData(
       progressCallback,
     )
   } catch (err) {
-    console.warn(
-      `[${adapterName}] Error during scrape. Returning partial results.`,
-    )
-    console.error(err)
+    progressCallback({
+      page: -1,
+      totalPages: -1,
+      found: -1,
+      logEntry: {
+        timestamp: new Date().toISOString(),
+        level: 'error',
+        message: `[${adapterName}] Error during scrape. Returning partial results. ${err instanceof Error ? err.message : String(err)}`,
+      },
+    })
   }
 
   return data

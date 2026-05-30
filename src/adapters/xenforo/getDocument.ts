@@ -14,7 +14,6 @@ async function getDocument(url: string, baseURL: string, adapterName: string) {
   const response = await fetch(url, {
     mode: 'cors',
     credentials: 'include',
-    headers: { 'User-Agent': navigator.userAgent },
   })
   const html = await response.text()
   const document = parseHTMLDocument(html)

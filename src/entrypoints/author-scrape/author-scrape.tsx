@@ -41,6 +41,8 @@ import type {
   SupportedSites,
 } from '@/types'
 
+const isDev = import.meta.env.DEV
+
 const scrapeAuthor = async (
   id: SupportedSites,
   url: string,
@@ -76,7 +78,16 @@ const scrapeAuthor = async (
 
     return data
   } catch (err) {
-    console.error(err)
+    progressCallback({
+      page: -1,
+      totalPages: -1,
+      found: -1,
+      logEntry: {
+        timestamp: new Date().toISOString(),
+        level: 'error',
+        message: err instanceof Error ? err.message : String(err),
+      },
+    })
     return []
   }
 }
@@ -115,11 +126,14 @@ export default function AuthorScrapeTab() {
   }
 
   const scrapeAllAuthors = async (authorList: AuthorStatus[]) => {
-    console.log('🔍 scrapeAllAuthors called with:', authorList)
+    if (isDev) console.log('🔍 scrapeAllAuthors called with:', authorList)
 
     for (let i = 0; i < authorList.length; i++) {
-      console.log(authorList)
-      console.log(authorList[i])
+      if (isDev) {
+        console.log(authorList)
+        console.log(authorList[i])
+      }
+
       const author = authorList[i]
       setSelectedAuthorIndex(i)
 
@@ -131,9 +145,9 @@ export default function AuthorScrapeTab() {
 
         // Add delay between authors (but not for the first one)
         if (i > 0) {
-          console.log('Delaying for 3 seconds between authors')
+          if (isDev) console.log('Delaying for 3 seconds between authors')
           await delay(3000)
-          console.log('Delay over')
+          if (isDev) console.log('Delay over')
         }
 
         // Reset progress for this author
@@ -179,9 +193,13 @@ export default function AuthorScrapeTab() {
             isAuthor: authorLinks.has(datum.link.replace(/\/$/, '')),
           }))
           updateStatus(i, 'success', sortByCountDescending(mutatedData))
-          console.log(
-            `Successfully scraped ${data.length} stories for ${author.name}`,
-          )
+          if (isDev) {
+            console.log(
+              `Successfully scraped ${data.length} stories for ${author.name}`,
+            )
+          }
+        } else {
+          updateStatus(i, 'success', [])
         }
       } catch (err) {
         console.error('Scrape error:', err)
@@ -248,8 +266,10 @@ export default function AuthorScrapeTab() {
           }
         })
 
-        console.log('Links: ', links)
-        console.log('Deduped Links: ', deduped)
+        if (isDev) {
+          console.log('Links: ', links)
+          console.log('Deduped Links: ', deduped)
+        }
 
         if (deduped.length === 0) {
           console.warn('No valid URLs found to scrape')
@@ -383,7 +403,7 @@ export default function AuthorScrapeTab() {
 
           {selectedAuthor?.status === 'error' && (
             <div className="font-semibold text-red-600">
-              ❌ Failed to scrape this author. Check the console for more info.
+              ❌ Failed to scrape this author.
             </div>
           )}
 

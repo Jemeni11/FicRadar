@@ -5,6 +5,8 @@ import getDocument from './getDocument'
 
 import type { ProgressData, StoryResult } from '@/types'
 
+const isDev = import.meta.env.DEV
+
 /**
  * Crawls a XenForo “all content” style paginated results set and aggregates
  * thread occurrences into a single StoryResult list.
@@ -30,11 +32,16 @@ async function collectPaginatedResults(
     level: 'debug' | 'info' | 'warn' | 'error',
     message: string,
   ) => {
-    // Still log to actual console for dev debugging
-    if (level === 'debug' || level === 'info')
-      console.log(`[${adapterName}] ${message}`)
-    else if (level === 'warn') console.warn(`[${adapterName}] ${message}`)
-    else console.error(`[${adapterName}] ${message}`)
+    if (isDev) {
+      const prefixedMessage = `[${adapterName}] ${message}`
+      if (level === 'debug' || level === 'info') {
+        console.log(prefixedMessage)
+      } else if (level === 'warn') {
+        console.warn(prefixedMessage)
+      } else {
+        console.error(prefixedMessage)
+      }
+    }
 
     // Since sendLog only knows static data most of the time, we emit a zero payload
     // and intercept it in react so IT DOES NOT OVERRIDE the real page progress numbers.

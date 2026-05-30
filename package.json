@@ -21,9 +21,9 @@
     "format:fix": "oxfmt .",
     "check": "pnpm lint && pnpm format ",
     "fix": "pnpm lint:fix && pnpm format:fix",
-    "test:firefox-android-clean": "web-ext run --source-dir ./build/firefox-mv2-dev -t firefox-android --adb-remove-old-artifacts",
-    "test:firefox-android": "web-ext run --source-dir ./build/firefox-mv2-dev -t firefox-android",
-    "lint:firefox": "web-ext lint --source-dir ./build/",
+    "test:firefox-android-clean": "web-ext run --source-dir .output/firefox-mv2-dev -t firefox-android --adb-remove-old-artifacts",
+    "test:firefox-android": "web-ext run --source-dir .output/firefox-mv2-dev -t firefox-android",
+    "lint:firefox": "web-ext lint --source-dir .output/firefox-mv2",
     "prepare": "husky"
   },
   "dependencies": {

@@ -19,9 +19,9 @@
 - [Table of Contents](#table-of-contents)
 - [Introduction](#introduction)
 - [Supported Sites](#supported-sites)
-- [Planned Support](#planned-support)
 - [Features](#features)
 - [How Recommendations Work](#how-recommendations-work)
+- [TODO / Future Work](#todo--future-work)
 - [Installation](#installation)
   - [Browser Extension Stores](#browser-extension-stores)
   - [Firefox Compatibility Notes](#firefox-compatibility-notes)
@@ -32,7 +32,7 @@
     - [Production Build](#production-build)
 - [Usage](#usage)
   - [Supported Files](#supported-files)
-  - [Multi-Author Recommendations](#multi-author-recommendations)
+  - [Batch Author Scraping](#batch-author-scraping)
   - [Example Workflows](#example-workflows)
     - [With fichub-cli](#with-fichub-cli)
     - [With FanFicFare](#with-fanficfare)
@@ -52,7 +52,7 @@ It helps you discover stories people (especially your favorite authors) keep rea
 You can use it to:
 
 - find what specific authors are reading
-- compare multiple authors and see overlapping stories
+- scrape multiple authors in one batch
 - build recommendation lists from forum activity
 - export discovered stories into external tools
 
@@ -66,23 +66,16 @@ This project is built with [WXT](https://wxt.dev/). Before v2.0.0, [Plasmo](http
 - **Sufficient Velocity**
 - **Questionable Questing**
 
-📝 _On these XenForo-based forums, FicRadar can rank links by how frequently they appear and by how many authors interact with them._
-
-## Planned Support
-
-- **Archive Of Our Own (AO3)** – Bookmarks, subscriptions (ranking won’t apply here)
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+📝 _On these XenForo-based forums, FicRadar ranks links by how frequently they appear in visible forum activity._
 
 ## Features
 
 - Scrapes story links from forum activity
 - Counts and ranks repeated thread interactions
-- Combine multiple authors into a shared recommendation view
-- Prioritize stories seen across multiple authors
+- Supports single-author scans and batch author uploads
 - Detects and marks stories authored by the scanned author
-- Optional filtering for authored works
-- Optional local cache and scrape resume support for long-running scans
+- Filters results by All / Discovered / Authored, with title search
+- Exports individual author results or all completed author results together
 - Export links in multiple formats:
   - JSON
   - CSV
@@ -101,9 +94,21 @@ If an author keeps posting in, replying to, or interacting with a thread, FicRad
 
 In single-author mode, stories are mainly ranked by repeated interactions.
 
-In multi-author mode, stories shared across multiple authors are ranked more highly than stories strongly associated with only one person.
+When multiple authors are uploaded, FicRadar currently scrapes them as separate authors and can export their completed results together.
 
 Likes are not used.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## TODO / Future Work
+
+These are planned ideas, not current v2 features:
+
+- Combine multiple authors into a shared recommendation view.
+- Prioritize stories seen across multiple authors over stories strongly associated with only one person.
+- Add local cache and scrape resume support for long-running scans.
+- Add user-configurable cache settings.
+- Explore AO3 support for bookmarks or subscriptions, where ranking may work differently.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -121,10 +126,10 @@ Likes are not used.
 Minimum supported versions:
 
 > [!NOTE]
-> The actual minimum Firefox version is 79. This is from the test run on addons.mozilla.org. The APIs used are supported from 54, but the manifest/package.json has keys that require 79+.
+> The actual minimum Firefox version is 79. This is from the test run on addons.mozilla.org. The APIs used are supported from 54, but the manifest/package.json has keys that require 140+.
 
-- Firefox Desktop: 45 (March 2016)
-- Firefox for Android: 54 (June 2017)
+- Firefox Desktop: 140
+- Firefox for Android: 142
 
 The extension uses these Firefox APIs:
 
@@ -200,13 +205,13 @@ Then load the resulting build folder as an unpacked extension.
 - TXT files with line breaks separating each link, or lines like: `Author Link: https://...`
 - JSON files with an `authorLink` field
 
-### Multi-Author Recommendations
+### Batch Author Scraping
 
-You can upload multiple author profiles or files to build a shared recommendation pool.
+You can upload multiple author profile links in one file.
 
-Instead of treating each author separately, FicRadar combines their activity and surfaces stories that repeatedly appear across those authors.
+FicRadar scrapes each author separately, shows their results per author, and can export all completed author results together.
 
-This is especially useful for finding stories that keep showing up across authors you already follow.
+Shared recommendation ranking across authors is planned for a later version.
 
 ### Example Workflows
 
@@ -232,7 +237,7 @@ fanficfare -i stoleThunderNotLightning_stories.txt
 
 Only locally on your own device.
 
-FicRadar uses browser storage to pass data between extension pages and optionally cache scrape results for resume/retry support.
+FicRadar uses browser storage to pass data between extension pages.
 
 Nothing is uploaded anywhere else.
 

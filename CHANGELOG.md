@@ -99,6 +99,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Popup and upload controls were restyled for the new dark theme and improved keyboard/focus behavior.
 - Author-scrape layout spacing and footer styling were updated to match the refreshed visual system.
 - `BuyMeACoffeeIcon` and `GitHubSponsorsIcon` now rely on external sizing/color classes instead of fixed inline styling.
+- README now separates current v2 behavior from future work, renames multi-author scanning to batch author scraping, and updates Firefox support notes.
+- XenForo scraping logs are now dev-only, scrape errors surface through progress events, and the scraper no longer sends a custom User-Agent header.
+- Author scrape error handling now reports a simpler failure message, and the Firefox build targets were updated to newer minimum versions.
+- `wxt.config.ts` now sets Gecko/Android minimum versions to 140.0 and 142.0, with Gecko data collection permissions explicitly set to `none`.
 
 ### Removed
 
