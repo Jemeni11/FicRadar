@@ -7,6 +7,8 @@ import { BuyMeACoffeeIcon, LinkOutIcon } from '@/icons'
 import '@/assets/tailwind.css'
 import cn from '@/utils/cn'
 
+import FileUploadSidebar from './components/FileUploadSidebar'
+
 import type { TalesTroveJSONType } from '@/types'
 
 const parseTextToLinks = (text: string): string[] => {
@@ -35,6 +37,7 @@ export default function FileUploadTab() {
   const [success, setSuccess] = useState<string | null>(null)
   const [isUploading, setIsUploading] = useState(false)
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleFileSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -93,78 +96,23 @@ export default function FileUploadTab() {
   }
 
   return (
-    <div className="relative flex flex-col sm:h-screen sm:flex-row">
-      {/* Sidebar */}
-      <aside className="flex size-full shrink-0 flex-col border-r border-gray-200 bg-gray-50 sm:w-64">
-        <div className="sticky top-0 z-10 border-b bg-gray-50 pb-4">
-          <div className="border-b p-4 text-lg font-bold">Upload</div>
+    <div className="relative flex h-svh">
+      <FileUploadSidebar
+        isSidebarOpen={isSidebarOpen}
+        onCloseSidebar={() => setIsSidebarOpen(false)}
+        onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+      />
 
-          <div className="my-6 px-4 text-sm text-gray-600">
-            Upload a file with XenForo author profile links.
+      <main className="flex min-h-svh flex-1 flex-col overflow-hidden transition-all duration-300">
+        <div className="flex-1 overflow-y-auto px-4 pt-18 pb-4 min-[600px]:p-8">
+          <div className="block max-w-full">
+            <h1 className="mb-6 text-2xl font-bold break-all">File Upload</h1>
           </div>
-
-          <div className="space-y-6 px-4 pb-4 text-sm text-gray-700">
-            <div className="space-y-3">
-              <h2 className="text-sm font-semibold tracking-wide text-gray-800 uppercase">
-                Supported File Types
-              </h2>
-
-              <div className="space-y-3 rounded-md border border-gray-200 bg-white p-3 text-sm">
-                <div className="space-y-1">
-                  <p className="font-medium text-gray-800">📄 JSON</p>
-                  <p className="text-[13px] leading-snug text-gray-600">
-                    A list of objects, each with an{' '}
-                    <code className="rounded bg-gray-100 px-1 py-0.5 text-[0.85em]">
-                      authorLink
-                    </code>{' '}
-                    field.
-                  </p>
-                </div>
-
-                <div className="space-y-1">
-                  <p className="font-medium text-gray-800">📝 TXT</p>
-                  <ul className="list-disc space-y-1 pl-4 text-[13px] text-gray-600">
-                    <li>
-                      Just the link:
-                      <br />
-                      <code className="rounded bg-gray-100 px-1 py-0.5 text-[0.8em] wrap-break-word">
-                        https://forums.spacebattles.com/members/example.12345/
-                      </code>
-                    </li>
-                    <li>
-                      Or a line like:
-                      <br />
-                      <code className="rounded bg-gray-100 px-1 py-0.5 text-[0.8em] wrap-break-word">
-                        Author Link:
-                        https://forums.sufficientvelocity.com/members/example.12345/
-                      </code>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            <div className="text-[12px] leading-tight text-gray-500">
-              TalesTrove export formats are fully supported.{' '}
-              <span className="mt-1 block">
-                <strong>Note:</strong> story-only files (LinksOnlyTXT) won’t
-                work.
-              </span>
-            </div>
-          </div>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <main className="flex-1 overflow-auto bg-white p-8">
-          <h1 className="mb-6 text-2xl font-bold">FicRadar File Upload</h1>
 
           <form
             onSubmit={handleFileSubmit}
             className="w-full max-w-md space-y-4"
           >
-            {/* Hidden file input */}
             <input
               ref={fileInputRef}
               id="file"
@@ -177,7 +125,6 @@ export default function FileUploadTab() {
               }}
             />
 
-            {/* Label styled like a button */}
             <label
               htmlFor="file"
               className={cn(
@@ -190,22 +137,21 @@ export default function FileUploadTab() {
               {selectedFileName || 'Choose File'}
             </label>
 
-            {/* Feedback */}
             {error && <div className="text-sm text-red-500">{error}</div>}
             {success && <div className="text-sm text-green-600">{success}</div>}
 
-            {/* Upload button */}
             <button
               type="submit"
               disabled={isUploading || !selectedFileName?.trim()}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-3xl bg-fr-1 py-1.5 text-center text-lg disabled:opacity-50"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-3xl bg-fr-1 py-1.5 text-center text-lg text-white disabled:opacity-50"
             >
               <span>{isUploading ? 'Processing...' : 'Upload & Scan'}</span>
               <LinkOutIcon className="size-4" />
             </button>
           </form>
-        </main>
-        <footer className="z-10 flex w-full shrink-0 flex-col items-center justify-center gap-2 border-t-2 border-purple-900/50 bg-[#0d1117] p-3 text-center font-mono text-xs sm:flex-row sm:gap-4">
+        </div>
+
+        <footer className="z-10 flex w-full shrink-0 flex-col items-center justify-center gap-2 bg-fr-surface p-3 text-center font-mono text-xs sm:flex-row sm:gap-4">
           <p className="text-gray-400">
             Export saved stories for offline. Try{' '}
             <a
@@ -222,13 +168,13 @@ export default function FileUploadTab() {
             href="https://www.buymeacoffee.com/jemeni11"
             target="_blank"
             rel="noopener noreferrer"
-            className="group flex items-center gap-1.5 font-bold text-gray-400 transition-colors hover:text-[#FFDD00]"
+            className="group inline font-bold text-gray-400 transition-colors hover:text-[#FFDD00]"
           >
-            <BuyMeACoffeeIcon className="h-4 w-4 text-gray-400 group-hover:text-[#FFDD00]" />
+            <BuyMeACoffeeIcon className="mr-1.5 inline-block h-4 w-4 align-middle text-gray-400 group-hover:text-[#FFDD00]" />
             Buy me a coffee
           </a>
         </footer>
-      </div>
+      </main>
     </div>
   )
 }
