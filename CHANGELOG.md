@@ -108,6 +108,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `PopupHeader` layout and text sizing now dynamically adapt to device pointer types (`pointer-coarse` vs `pointer-fine`) because I think it looks cool.
 - Added a `pointer-coarse:min-w-fit` constraint to the main popup container to prevent content compression on mobile devices.
 - Updated the README to explicitly warn users about XenForo scraping failures when logged out and added a detailed technical explanation of why authentication is required.
+- Harmonized the file upload layout structure to perfectly match the author scrape tab's responsive `min-h-svh` design.
+- Adjusted sidebar mobile breakpoints across all tabs from `min-[450px]` to `min-[600px]` for better tablet/phablet support (are phablets still a thing?).
 
 ### Removed
 
