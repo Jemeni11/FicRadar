@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [//]: # '- **Fixed** for any bug fixes.'
 [//]: # '- **Security** in case of vulnerabilities.'
 
-## [2.0.0] — Unreleased
+## [2.0.0] — 2026-06-TBD
 
 ### Added
 
@@ -58,6 +58,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Profile search-link discovery for XenForo so authored-story URLs can be detected more reliably.
 - New popup accessibility and UI polish: tab semantics, alert/status icons, improved input labels, and clearer file-upload copy.
 - Refreshed author-scrape sidebar/footer styling and behavior for the new theme.
+- Added helper text to the popup URL input form reminding users to log into the forum before scanning to ensure accurate results.
 
 ### Changed
 
@@ -103,6 +104,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - XenForo scraping logs are now dev-only, scrape errors surface through progress events, and the scraper no longer sends a custom User-Agent header.
 - Author scrape error handling now reports a simpler failure message, and the Firefox build targets were updated to newer minimum versions.
 - `wxt.config.ts` now sets Gecko/Android minimum versions to 140.0 and 142.0, with Gecko data collection permissions explicitly set to `none`.
+- `id="root"` changed to `id="popup-root"` in the popup entrypoint (`index.html` and `main.tsx`).
+- `PopupHeader` layout and text sizing now dynamically adapt to device pointer types (`pointer-coarse` vs `pointer-fine`) because I think it looks cool.
+- Added a `pointer-coarse:min-w-fit` constraint to the main popup container to prevent content compression on mobile devices.
+- Updated the README to explicitly warn users about XenForo scraping failures when logged out and added a detailed technical explanation of why authentication is required.
 
 ### Removed
 
@@ -130,6 +135,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `src/adapters/xenforo.ts` split into `index.ts`, `getDocument.ts`,
   `collectPaginatedResults.ts`.
 - `toggleVariants` extracted to `src/components/ui/toggleVariants.ts`.
+
+### Fixed
+
+- Fixed `removePostNumber` logic to robustly handle trailing slashes, `#post-` hashes, and `/unread` endpoints, preventing identical threads from failing to aggregate (especially common when browsing XenForo logged out).
 
 ## [1.2.0] - 2026-03-03
 
