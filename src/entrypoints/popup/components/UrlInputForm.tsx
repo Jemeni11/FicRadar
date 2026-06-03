@@ -120,6 +120,9 @@ export default function UrlInputForm({
         <span>{isScanning ? 'Scanning…' : 'Scan Link'}</span>
         <LinkOutIcon className="size-4" />
       </button>
+      <p className="text-center text-xs text-fr-muted/80">
+        Ensure you are logged into the forum before scanning.
+      </p>
     </form>
   )
 }
