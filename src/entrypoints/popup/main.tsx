@@ -5,7 +5,7 @@ import Popup from './Popup.tsx'
 
 import '@/assets/tailwind.css'
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
+ReactDOM.createRoot(document.getElementById('popup-root')!).render(
   <React.StrictMode>
     <Popup />
   </React.StrictMode>,
