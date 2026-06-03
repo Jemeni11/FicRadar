@@ -189,9 +189,9 @@ Then load the resulting build folder as an unpacked extension.
 
 ## Usage
 
-> [!NOTE]
+> [!IMPORTANT]
 >
-> You must be logged in to the forum for data to be extracted.
+> You **must** be logged in to the target forum before scanning. If you are logged out, XenForo alters link structures and disables certain search features, which will cause the scraper to fail or miss authored stories.
 
 1. Navigate to a supported user profile page and copy the URL.
 2. Click the FicRadar icon.
@@ -245,14 +245,13 @@ There’s no backend service, no accounts, and no tracking.
 
 **Why do I need to be logged in?**
 
-Some platforms require login to access user activity or subscription data.
+XenForo forums behave differently for guests than for logged-in users. When you are logged out:
 
-For example:
+- Certain search pages and user activity feeds are restricted or hidden entirely.
+- Link structures change (e.g., appending trailing slashes or using hash fragments), which breaks the extension's ability to count and rank duplicate stories accurately.
+- The scraper cannot accurately separate stories the author wrote from stories they just commented on.
 
-- Questionable Questing may restrict some pages to logged-in users
-- AO3 subscriptions and bookmarks may require login access
-
-Some pages may still work without logging in, but this is not guaranteed.
+To ensure the extension works properly, always log in to the forum before starting a scan.
 
 **Why are some stories marked as authored works?**
 
