@@ -317,7 +317,7 @@ export default function AuthorScrapeTab() {
       />
 
       <main className="flex h-screen flex-1 flex-col overflow-hidden transition-all duration-300">
-        <div className="flex-1 overflow-y-auto px-4 pt-18 pb-4 min-[450px]:p-8">
+        <div className="flex-1 overflow-y-auto px-4 pt-18 pb-4 min-[600px]:p-8">
           <div className="block max-w-full">
             <h1 className="mb-4 text-2xl font-bold break-all">
               <a
@@ -431,9 +431,9 @@ export default function AuthorScrapeTab() {
             href="https://www.buymeacoffee.com/jemeni11"
             target="_blank"
             rel="noopener noreferrer"
-            className="group flex items-center gap-1.5 font-bold text-gray-400 transition-colors hover:text-[#FFDD00]"
+            className="group inline font-bold text-gray-400 transition-colors hover:text-[#FFDD00]"
           >
-            <BuyMeACoffeeIcon className="h-4 w-4 text-gray-400 group-hover:text-[#FFDD00]" />
+            <BuyMeACoffeeIcon className="mr-1.5 inline-block h-4 w-4 align-middle text-gray-400 group-hover:text-[#FFDD00]" />
             Buy me a coffee
           </a>
         </footer>

@@ -24,10 +24,9 @@ export default function AuthorSidebar({
 }: AuthorSidebarProps) {
   return (
     <>
-      {/* Mobile toggle button */}
       <button
         className={cn(
-          'fixed top-4 left-4 z-30 flex size-10 items-center justify-center rounded-lg border border-white/10 bg-fr-surface text-fr-muted shadow-sm min-[450px]:hidden',
+          'fixed top-4 left-4 z-30 flex size-10 items-center justify-center rounded-lg border border-white/10 bg-fr-surface text-fr-muted shadow-sm min-[600px]:hidden',
           'transition-[color,background-color,border-color] duration-150 ease-out',
           'hover:bg-white/5 hover:text-white focus-visible:ring-2 focus-visible:ring-fr-accent focus-visible:ring-offset-2 focus-visible:ring-offset-fr-3 focus-visible:outline-none',
         )}
@@ -50,10 +49,9 @@ export default function AuthorSidebar({
         </svg>
       </button>
 
-      {/* Mobile overlay */}
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 z-20 bg-black/60 backdrop-blur-sm transition-opacity duration-300 min-[450px]:hidden"
+          className="fixed inset-0 z-20 bg-black/60 backdrop-blur-sm transition-opacity duration-300 min-[600px]:hidden"
           onClick={onCloseSidebar}
           aria-hidden="true"
         />
@@ -61,16 +59,16 @@ export default function AuthorSidebar({
 
       <aside
         className={cn(
-          'fixed top-0 left-0 z-30 flex h-full flex-col bg-fr-surface shadow-2xl transition-all duration-300 ease-out min-[450px]:relative min-[450px]:translate-x-0 min-[450px]:shadow-none',
+          'fixed top-0 left-0 z-30 flex h-full flex-col bg-fr-surface shadow-2xl transition-all duration-300 ease-out min-[600px]:relative min-[600px]:translate-x-0 min-[600px]:shadow-none',
           isSidebarOpen
-            ? 'visible w-80 translate-x-0 min-[450px]:w-72'
-            : 'invisible w-80 -translate-x-full min-[450px]:visible min-[450px]:w-72',
+            ? 'visible w-80 translate-x-0 min-[600px]:w-72'
+            : 'invisible w-80 -translate-x-full min-[600px]:visible min-[600px]:w-72',
         )}
       >
         <div className="sticky top-0 z-10 flex w-full flex-col gap-4 border-b border-white/5 bg-fr-surface/95 p-4 backdrop-blur-md">
           <button
             className={cn(
-              'flex min-h-11 w-full items-center justify-center rounded-lg border border-white/10 bg-white/5 text-sm font-medium text-white min-[450px]:hidden',
+              'flex min-h-11 w-full items-center justify-center rounded-lg border border-white/10 bg-white/5 text-sm font-medium text-white min-[600px]:hidden',
               'transition-[background-color,border-color] duration-150 ease-out',
               'hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-fr-accent focus-visible:outline-none',
             )}
