@@ -46,7 +46,7 @@ export default function Popup() {
   )
 
   return (
-    <div className="min-h-full w-full pointer-fine:w-96">
+    <div className="min-h-full w-full pointer-coarse:min-w-fit pointer-fine:w-96">
       <PopupHeader />
 
       <main className="flex flex-col gap-3 bg-fr-3 px-4 py-4 text-white">
