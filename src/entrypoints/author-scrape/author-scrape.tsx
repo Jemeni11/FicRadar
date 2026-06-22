@@ -8,6 +8,7 @@ import {
   getSufficientVelocityData,
 } from '@/adapters'
 import ExportButton from '@/components/shared/ExportButton'
+import FeedbackLink from '@/components/shared/FeedbackLink'
 import { SUPPORTED_SITES } from '@/constants'
 import {
   BookmarksHTMLIcon,
@@ -436,6 +437,8 @@ export default function AuthorScrapeTab() {
             <BuyMeACoffeeIcon className="mr-1.5 inline-block h-4 w-4 align-middle text-gray-400 group-hover:text-[#FFDD00]" />
             Buy me a coffee
           </a>
+          <span className="hidden text-gray-700 sm:inline">|</span>
+          <FeedbackLink />
         </footer>
       </main>
     </div>

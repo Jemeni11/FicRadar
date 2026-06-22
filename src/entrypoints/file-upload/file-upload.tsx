@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 
 import { storage } from '#imports'
 
+import FeedbackLink from '@/components/shared/FeedbackLink'
 import { BuyMeACoffeeIcon, LinkOutIcon } from '@/icons'
 
 import '@/assets/tailwind.css'
@@ -173,6 +174,8 @@ export default function FileUploadTab() {
             <BuyMeACoffeeIcon className="mr-1.5 inline-block h-4 w-4 align-middle text-gray-400 group-hover:text-[#FFDD00]" />
             Buy me a coffee
           </a>
+          <span className="hidden text-gray-700 sm:inline">|</span>
+          <FeedbackLink />
         </footer>
       </main>
     </div>

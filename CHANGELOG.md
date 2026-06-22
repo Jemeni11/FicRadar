@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [//]: # '- **Fixed** for any bug fixes.'
 [//]: # '- **Security** in case of vulnerabilities.'
 
-## [2.0.0] — 2026-06-TBD
+## [2.0.0] — 2026-06-22
 
 ### Added
 
@@ -59,6 +59,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New popup accessibility and UI polish: tab semantics, alert/status icons, improved input labels, and clearer file-upload copy.
 - Refreshed author-scrape sidebar/footer styling and behavior for the new theme.
 - Added helper text to the popup URL input form reminding users to log into the forum before scanning to ensure accurate results.
+- Version badge in the popup header showing the current extension version.
+- Feedback link with separator in the author-scrape and file-upload page
+  footers.
 
 ### Changed
 
@@ -110,6 +113,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated the README to explicitly warn users about XenForo scraping failures when logged out and added a detailed technical explanation of why authentication is required.
 - Harmonized the file upload layout structure to perfectly match the author scrape tab's responsive `min-h-svh` design.
 - Adjusted sidebar mobile breakpoints across all tabs from `min-[450px]` to `min-[600px]` for better tablet/phablet support (are phablets still a thing?).
+- Heart icon in the popup footer now gently pulses (`motion-safe:animate-pulse`).
 
 ### Removed
 
